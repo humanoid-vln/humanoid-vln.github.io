@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="HumanoidVLN: a physics-grounded simulator and benchmark for vision-language navigation across diverse humanoid embodiments. Humanoids 2026.">
+  <meta property="og:title" content="HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots">
+  <meta property="og:description"
+    content="An Isaac Sim platform, navigability-curated scenes, and a multi-agent instruction pipeline for humanoid vision-language navigation.">
+  <meta property="og:image" content="images/simulation_platform.webp">
+  <title>HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ============ Tokens ============ */
+    :root {
+      --paper: #F7F9FC;
+      --surface: #FFFFFF;
+      --ink: #0E1626;
+      --ink-soft: #2A3A55;
+      --muted: #5B6B84;
+      --line: #DCE3EE;
+      --line-soft: #E9EEF6;
+      --blue: #1A5FD6;
+      --blue-deep: #0F3E8F;
+      --blue-tint: #EAF1FD;
+      --green: #0E9F6E;
+      --green-tint: #E7F6F0;
+      --amber: #D97706;
+      --amber-tint: #FDF3E3;
+      --violet: #6D4FC4;
+      --violet-tint: #F0EBFB;
+      --red: #D14343;
+      --viewport-bg: #0B1424;
+      --viewport-grid: rgba(122, 160, 220, 0.13);
+      --viewport-grid-strong: rgba(122, 160, 220, 0.28);
+      --display: "Space Grotesk", sans-serif;
+      --body: "Instrument Sans", sans-serif;
+      --mono: "IBM Plex Mono", monospace;
+      --radius: 14px;
+      --shadow-sm: 0 1px 2px rgba(14, 22, 38, 0.05), 0 2px 8px rgba(14, 22, 38, 0.05);
+      --shadow-md: 0 2px 6px rgba(14, 22, 38, 0.06), 0 12px 32px rgba(14, 22, 38, 0.09);
+      --maxw: 1080px;
+      --maxw-wide: 1240px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 84px;
+    }
+
+    body {
+      font-family: var(--body);
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .wrap-wide {
+      max-width: var(--maxw-wide);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 72px 0;
+    }
+
+    section+section {
+      border-top: 1px solid var(--line-soft);
+    }
+
+    /* ============ Reveal on scroll ============ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ============ Nav ============ */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(247, 249, 252, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .nav-inner {
+      max-width: var(--maxw-wide);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .wordmark {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .wordmark .pin {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      background: var(--blue);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-links a {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 7px 12px;
+      border-radius: 8px;
+      transition: color .18s, background .18s;
+    }
+
+    .nav-links a:hover {
+      color: var(--ink);
+      background: var(--line-soft);
+    }
+
+    .nav-links a.active {
+      color: var(--blue);
+      background: var(--blue-tint);
+    }
+
+    @media (max-width: 860px) {
+      .nav-links {
+        display: none;
+      }
+    }
+
+    /* ============ Hero ============ */
+    .hero {
+      padding: 64px 0 56px;
+      border-top: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue-deep);
+      background: var(--blue-tint);
+      border: 1px solid #C9DBF7;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 22px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .35;
+      }
+    }
+
+    h1.title {
+      font-family: var(--display);
+      font-size: clamp(30px, 4.6vw, 50px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.022em;
+      max-width: 980px;
+      margin-bottom: 10px;
+    }
+
+    h1 .accent {
+      color: var(--blue);
+    }
+
+    .subtitle {
+      font-size: clamp(16px, 2vw, 19.5px);
+      color: var(--muted);
+      max-width: 800px;
+      margin-bottom: 26px;
+      font-weight: 400;
+    }
+
+    .authors {
+      font-size: 16.5px;
+      color: var(--ink-soft);
+      max-width: 860px;
+      margin-bottom: 6px;
+    }
+
+    .authors a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line);
+      transition: color .15s, border-color .15s;
+    }
+
+    .authors a:hover {
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .authors sup {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .affil {
+      font-size: 14.5px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 44px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--body);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 100px;
+      text-decoration: none;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s, border-color .16s;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-deep);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--ink);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn .soon {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      background: var(--amber-tint);
+      color: var(--amber);
+      padding: 2px 7px;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex: none;
+    }
+
+    /* ============ Simulator viewport (signature) ============ */
+    .viewport {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--viewport-bg);
+      box-shadow: 0 24px 70px rgba(11, 20, 36, 0.35), 0 4px 16px rgba(11, 20, 36, 0.2);
+      border: 1px solid #22334F;
+    }
+
+    .viewport-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(122, 160, 220, .15);
+      font-family: var(--mono);
+      font-size: 11.5px;
+      letter-spacing: .08em;
+      color: #7E96BC;
+      text-transform: uppercase;
+    }
+
+    .viewport-chrome .rec {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #9FB4D6;
+    }
+
+    .viewport-chrome .rec::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #E5484D;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    .viewport-body {
+      position: relative;
+      padding: clamp(18px, 4vw, 40px);
+    }
+
+    .gridmap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 311 / 212;
+      min-height: 260px;
+      background-image:
+        linear-gradient(var(--viewport-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--viewport-grid) 1px, transparent 1px),
+        linear-gradient(var(--viewport-grid-strong) 1px, transparent 1px),
+        linear-gradient(90deg, var(--viewport-grid-strong) 1px, transparent 1px);
+      background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+      border-radius: 10px;
+    }
+
+    .gridmap svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .gridmap .map-bg {
+      filter: invert(1) brightness(.68) contrast(.9) saturate(.7);
+      opacity: .55;
+    }
+
+    .gridmap .grid-line-fine {
+      stroke: var(--viewport-grid);
+      stroke-width: 1;
+    }
+
+    .gridmap .grid-line-strong {
+      stroke: var(--viewport-grid-strong);
+      stroke-width: 1.4;
+    }
+
+    .gridmap .grid-overlay {
+      pointer-events: none;
+    }
+
+    .gridmap .map-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .12em;
+      fill: #62789C;
+      text-transform: uppercase;
+      paint-order: stroke;
+      stroke: var(--viewport-bg, #0B1424);
+      stroke-width: 3px;
+    }
+
+    .path-trace {
+      fill: none;
+      stroke: #5B9BFF;
+      stroke-width: 2.5;
+      stroke-dasharray: 7 8;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 6px rgba(91, 155, 255, 0.55));
+      animation: trace 22s linear infinite;
+    }
+
+    @keyframes trace {
+      to {
+        stroke-dashoffset: -600;
+      }
+    }
+
+    .waypoint {
+      fill: #5B9BFF;
+    }
+
+    .waypoint-halo {
+      fill: none;
+      stroke: #5B9BFF;
+      stroke-width: 1.5;
+      opacity: .5;
+      animation: halo 2.4s ease-out infinite;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    @keyframes halo {
+      0% {
+        transform: scale(.4);
+        opacity: .7;
+      }
+
+      100% {
+        transform: scale(1.8);
+        opacity: 0;
+      }
+    }
+
+    .start-node {
+      fill: #35C48D;
+    }
+
+    .robot-dot {
+      fill: #FFD166;
+      filter: drop-shadow(0 0 5px rgba(255, 209, 102, 0.85));
+      animation: robot-blink 1s ease-in-out infinite;
+    }
+
+    .robot-halo {
+      fill: none;
+      stroke: #FFD166;
+      stroke-width: 1.5;
+      opacity: .55;
+      animation: robot-blink 1s ease-in-out infinite;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    @keyframes robot-blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .25;
+      }
+    }
+
+    .goal-pin {
+      fill: #FF8A5C;
+    }
+
+    /* Ego-cam miniplayer (picture-in-picture overlay) */
+    .miniplayer {
+      position: absolute;
+      top: clamp(10px, 2vw, 18px);
+      left: clamp(10px, 2vw, 18px);
+      width: clamp(118px, 26%, 250px);
+      z-index: 3;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #111E34;
+      border: 1px solid rgba(122, 160, 220, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+    }
+
+    .miniplayer:hover {
+      transform: scale(1.03);
+      border-color: rgba(122, 160, 220, 0.6);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    .miniplayer-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(122, 160, 220, 0.18);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #7E96BC;
+    }
+
+    .miniplayer-chrome .live {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #9FB4D6;
+    }
+
+    .miniplayer-chrome .live::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #E5484D;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    .miniplayer-screen {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background:
+        radial-gradient(120% 90% at 50% 110%, rgba(91, 155, 255, 0.12), transparent 60%),
+        linear-gradient(rgba(122, 160, 220, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(122, 160, 220, 0.07) 1px, transparent 1px);
+      background-size: 100% 100%, 14px 14px, 14px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .miniplayer-screen video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* fake progress bar */
+    .miniplayer-bar {
+      height: 3px;
+      background: rgba(122, 160, 220, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .miniplayer-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      background: #5B9BFF;
+      border-radius: 2px;
+      animation: mp-progress 9s linear infinite;
+    }
+
+    @keyframes mp-progress {
+      from {
+        transform: translateX(-100%);
+      }
+
+      to {
+        transform: translateX(260%);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .miniplayer-chrome .rgb-tag {
+        display: none;
+      }
+    }
+
+    .instr-bar {
+      margin-top: clamp(16px, 3vw, 26px);
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(17, 30, 52, 0.85);
+      border: 1px solid rgba(122, 160, 220, .2);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .instr-bar .tag {
+      flex: none;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #35C48D;
+      border: 1px solid rgba(53, 196, 141, .4);
+      border-radius: 6px;
+      padding: 4px 8px;
+      margin-top: 2px;
+      transition: color .3s, border-color .3s;
+    }
+
+    .instr-bar .tag.tag-coarse {
+      color: #7FB1FF;
+      border-color: rgba(91, 155, 255, 0.45);
+    }
+
+    .instr-text {
+      font-family: var(--mono);
+      font-size: clamp(13.5px, 1.7vw, 16px);
+      color: #DCE7F7;
+      line-height: 1.6;
+      min-height: 2.6em;
+    }
+
+    .instr-text .caret {
+      display: inline-block;
+      width: 8px;
+      height: 1.1em;
+      margin-left: 2px;
+      background: #5B9BFF;
+      vertical-align: text-bottom;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .viewport-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 26px;
+      padding: 12px 18px;
+      border-top: 1px solid rgba(122, 160, 220, .15);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: #62789C;
+    }
+
+    .viewport-footer b {
+      color: #9FB4D6;
+      font-weight: 500;
+    }
+
+    /* ============ Section headers ============ */
+    .sec-eyebrow {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sec-eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 2px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    h2.sec-title {
+      font-family: var(--display);
+      font-size: clamp(25px, 3.4vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.018em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      max-width: 800px;
+    }
+
+    .sec-lede {
+      font-size: 17.5px;
+      color: var(--muted);
+      max-width: 760px;
+      margin-bottom: 40px;
+    }
+
+    /* ============ Stats strip ============ */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 960px) {
+      .stats {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 620px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 20px 16px;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+    }
+
+    .stat:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: #BFD2F0;
+    }
+
+    .stat .num {
+      font-family: var(--display);
+      font-size: clamp(26px, 3vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+    }
+
+    .stat .unit {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue);
+    }
+
+    .stat .lbl {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* ============ Abstract ============ */
+    .abstract-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(26px, 4vw, 44px);
+      box-shadow: var(--shadow-sm);
+      font-size: 17.5px;
+      line-height: 1.75;
+      color: var(--ink-soft);
+      max-width: 920px;
+    }
+
+    .abstract-card p+p {
+      margin-top: 16px;
+    }
+
+    .abstract-card b {
+      color: var(--ink);
+    }
+
+    /* ============ Gap cards ============ */
+    .gaps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .gaps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .gap-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gap-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent, var(--blue));
+      opacity: .9;
+    }
+
+    .gap-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: #C4D4EE;
+    }
+
+    .gap-card .gap-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent, var(--blue));
+      margin-bottom: 12px;
+    }
+
+    .gap-card h3 {
+      font-family: var(--display);
+      font-size: 19.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .gap-card .problem {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .gap-card .solution {
+      margin-top: auto;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      background: color-mix(in srgb, var(--accent, var(--blue)) 7%, white);
+      border-left: 3px solid var(--accent, var(--blue));
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+    }
+
+    .gap-card .solution b {
+      color: var(--ink);
+    }
+
+    /* ============ Figures ============ */
+    .figure {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(14px, 2.4vw, 26px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      cursor: zoom-in;
+    }
+
+    .figure figcaption {
+      margin-top: 14px;
+      font-size: 14.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      padding: 0 6px;
+    }
+
+    .figure figcaption b {
+      color: var(--ink-soft);
+    }
+
+    /* ============ Robot selector ============ */
+    .robot-lab {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(22px, 3vw, 36px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    @media (max-width: 860px) {
+      .robot-lab {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .robot-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .robot-tab {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: var(--body);
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--paper);
+      color: var(--ink-soft);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 13px 16px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: border-color .18s, background .18s, color .18s;
+    }
+
+    .robot-tab .meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .robot-tab:hover {
+      border-color: var(--blue);
+    }
+
+    .robot-tab[aria-selected="true"] {
+      background: var(--blue-tint);
+      border-color: var(--blue);
+      color: var(--blue-deep);
+    }
+
+    .robot-tab[aria-selected="true"] .meta {
+      color: var(--blue);
+    }
+
+    .robot-stage {
+      display: grid;
+      grid-template-columns: minmax(150px, 220px) 1fr;
+      gap: 26px;
+      align-items: end;
+    }
+
+    @media (max-width: 560px) {
+      .robot-stage {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+    }
+
+    .silhouette-area {
+      position: relative;
+      height: 320px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 2px solid var(--line);
+      background: linear-gradient(to top, var(--line-soft), transparent 30%);
+      border-radius: 6px 6px 0 0;
+    }
+
+    .silhouette-area .robot-photo {
+      display: block;
+      width: auto;
+      max-width: calc(100% - 24px);
+      max-height: calc(100% - 24px);
+      object-fit: contain;
+      transition: height .5s cubic-bezier(.5, 1.4, .5, 1);
+    }
+
+    .height-ruler {
+      position: absolute;
+      right: 6px;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .height-line {
+      position: absolute;
+      right: 0;
+      left: -18px;
+      border-top: 1.5px dashed var(--blue);
+      transition: bottom .5s cubic-bezier(.5, 1.4, .5, 1);
+    }
+
+    .height-line span {
+      position: absolute;
+      right: 0;
+      top: -21px;
+      background: var(--blue);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+
+    .robot-facts {
+      padding-bottom: 8px;
+    }
+
+    .robot-facts h3 {
+      font-family: var(--display);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      margin-bottom: 4px;
+    }
+
+    .robot-facts .cfg {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--blue);
+      margin-bottom: 16px;
+    }
+
+    .robot-facts p {
+      font-size: 15.5px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 18px;
+      max-width: 480px;
+    }
+
+    .fact-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .fact-chip {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      border-radius: 100px;
+    }
+
+    .fact-chip b {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ============ Control stack ============ */
+    .stack-flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 0;
+      align-items: stretch;
+      margin-top: 34px;
+    }
+
+    @media (max-width: 900px) {
+      .stack-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .stack-arrow {
+        transform: rotate(90deg);
+        margin: 4px auto;
+      }
+    }
+
+    .stack-node {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+
+    .stack-node:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: #BFD2F0;
+    }
+
+    .stack-node .lvl {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stack-node h4 {
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .stack-node p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .stack-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      color: var(--blue);
+    }
+
+    /* ============ Scene cards ============ */
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .scene-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .scene-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .scene-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .scene-thumb {
+      aspect-ratio: 16 / 10;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8FA6C8;
+    }
+
+    .scene-thumb.artist {
+      background: linear-gradient(135deg, #16233C, #23406B);
+    }
+
+    .scene-thumb.gs {
+      background: linear-gradient(135deg, #221B3E, #45327A);
+    }
+
+    .scene-thumb.robot {
+      background: linear-gradient(135deg, #10302A, #1E5C4C);
+    }
+
+    .scene-thumb::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    .scene-thumb .ph {
+      position: relative;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .scene-thumb .ph svg {
+      width: 42px;
+      height: 42px;
+      opacity: .9;
+      margin-bottom: 8px;
+    }
+
+    .scene-thumb .ph span {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .75;
+    }
+
+    .scene-body {
+      padding: 20px 20px 22px;
+    }
+
+    .scene-body .src-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      margin-bottom: 10px;
+    }
+
+    .src-a {
+      background: var(--blue-tint);
+      color: var(--blue-deep);
+    }
+
+    .src-gs {
+      background: var(--violet-tint);
+      color: var(--violet);
+    }
+
+    .src-r {
+      background: var(--green-tint);
+      color: var(--green);
+    }
+
+    .scene-body h3 {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .scene-body p {
+      font-size: 14.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .navigable-note {
+      margin-top: 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--blue-tint);
+      border: 1px solid #C9DBF7;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 15px;
+      color: var(--ink-soft);
+      max-width: 860px;
+    }
+
+    .navigable-note svg {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      color: var(--blue);
+      margin-top: 2px;
+    }
+
+    .navigable-note b {
+      color: var(--ink);
+    }
+
+    /* ============ MAS stepper ============ */
+    .mas-demo {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-top: 34px;
+    }
+
+    .mas-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    @media (max-width: 760px) {
+      .mas-steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .mas-step {
+      font-family: var(--body);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 16px 12px 14px;
+      text-align: center;
+      position: relative;
+      border-bottom: 3px solid transparent;
+      transition: background .18s;
+    }
+
+    .mas-step:hover {
+      background: var(--paper);
+    }
+
+    .mas-step .n {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--line-soft);
+      color: var(--muted);
+      margin-bottom: 6px;
+      transition: background .18s, color .18s;
+    }
+
+    .mas-step .t {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: color .18s;
+    }
+
+    .mas-step[aria-selected="true"] {
+      border-bottom-color: var(--step-color, var(--blue));
+    }
+
+    .mas-step[aria-selected="true"] .n {
+      background: var(--step-color, var(--blue));
+      color: #fff;
+    }
+
+    .mas-step[aria-selected="true"] .t {
+      color: var(--ink);
+    }
+
+    .mas-panel {
+      padding: clamp(22px, 3.4vw, 38px);
+      display: none;
+    }
+
+    .mas-panel.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: center;
+      animation: fadeIn .35s ease;
+    }
+
+    @media (max-width: 820px) {
+      .mas-panel.active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .agent-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .agent-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .agent-avatar svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .av-gen {
+      background: var(--amber-tint);
+      color: var(--amber);
+    }
+
+    .av-rev {
+      background: var(--blue-tint);
+      color: var(--blue);
+    }
+
+    .av-par {
+      background: var(--green-tint);
+      color: var(--green);
+    }
+
+    .av-hum {
+      background: var(--violet-tint);
+      color: var(--violet);
+    }
+
+    .agent-head h3 {
+      font-family: var(--display);
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .agent-head .role {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--muted);
+      letter-spacing: .05em;
+    }
+
+    .mas-panel .desc {
+      font-size: 15.5px;
+      color: var(--muted);
+      line-height: 1.68;
+    }
+
+    .mas-panel .desc b {
+      color: var(--ink-soft);
+    }
+
+    .msg {
+      border-radius: 12px;
+      padding: 15px 18px;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+
+    .msg+.msg {
+      margin-top: 12px;
+    }
+
+    .msg .from {
+      display: block;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .msg-gen {
+      background: var(--amber-tint);
+      border: 1px solid #F3DDB4;
+      color: #7A4B10;
+    }
+
+    .msg-gen .from {
+      color: var(--amber);
+    }
+
+    .msg-rev {
+      background: var(--blue-tint);
+      border: 1px solid #C9DBF7;
+      color: var(--blue-deep);
+    }
+
+    .msg-rev .from {
+      color: var(--blue);
+    }
+
+    .msg-par {
+      background: var(--green-tint);
+      border: 1px solid #BEE7D6;
+      color: #0B5C42;
+    }
+
+    .msg-par .from {
+      color: var(--green);
+    }
+
+    .msg-hum {
+      background: var(--violet-tint);
+      border: 1px solid #DCD2F4;
+      color: #4A3585;
+    }
+
+    .msg-hum .from {
+      color: var(--violet);
+    }
+
+    .msg .flag {
+      background: rgba(209, 67, 67, 0.13);
+      color: var(--red);
+      border-radius: 4px;
+      padding: 0 4px;
+      text-decoration: line-through;
+      text-decoration-thickness: 1.5px;
+    }
+
+    .msg .fix {
+      background: rgba(14, 159, 110, 0.16);
+      color: #0B5C42;
+      border-radius: 4px;
+      padding: 0 4px;
+      font-weight: 600;
+    }
+
+    /* ============ Instruction taxonomy tabs ============ */
+    .taxo {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow-sm);
+      padding: clamp(22px, 3.4vw, 36px);
+      margin-top: 34px;
+    }
+
+    .taxo-toggle {
+      display: inline-flex;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .taxo-toggle button {
+      font-family: var(--body);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 100px;
+      transition: background .18s, color .18s;
+    }
+
+    .taxo-toggle button[aria-selected="true"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .taxo-hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 10px 0 20px;
+    }
+
+    .style-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .style-row[hidden] {
+      display: none;
+    }
+
+    .style-chip {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--paper);
+      color: var(--muted);
+      border: 1.5px solid var(--line);
+      padding: 6px 14px;
+      border-radius: 100px;
+      transition: all .18s;
+    }
+
+    .style-chip:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .style-chip[aria-selected="true"] {
+      background: var(--blue-tint);
+      border-color: var(--blue);
+      color: var(--blue-deep);
+    }
+
+    .instr-output {
+      background: var(--viewport-bg);
+      border-radius: 12px;
+      padding: 22px 24px;
+      font-family: var(--mono);
+      font-size: 14.5px;
+      line-height: 1.8;
+      color: #DCE7F7;
+      min-height: 118px;
+    }
+
+    .instr-output .lab {
+      display: block;
+      font-size: 10.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #35C48D;
+      margin-bottom: 10px;
+    }
+
+    .taxo-schema {
+      margin-top: 18px;
+      font-size: 13.5px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .taxo-schema code {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 7px;
+      color: var(--ink-soft);
+    }
+
+    /* ============ Comparison table ============ */
+    .table-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table.cmp {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 880px;
+      font-size: 14.5px;
+    }
+
+    .cmp th {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 1.5px solid var(--line);
+      background: var(--paper);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+
+    .cmp td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .cmp tbody tr {
+      transition: background .15s;
+    }
+
+    .cmp tbody tr:hover {
+      background: var(--paper);
+    }
+
+    .cmp tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .cmp .ds {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .cmp .yes {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .cmp .no {
+      color: #B4BFCF;
+    }
+
+    .cmp .pill {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: var(--line-soft);
+      color: var(--ink-soft);
+    }
+
+    .cmp .pill.hl {
+      background: var(--green-tint);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .cmp tr.ours {
+      background: linear-gradient(90deg, var(--blue-tint), rgba(234, 241, 253, 0.35));
+    }
+
+    .cmp tr.ours:hover {
+      background: var(--blue-tint);
+    }
+
+    .cmp tr.ours td {
+      border-top: 1.5px solid var(--blue);
+      border-bottom: 1.5px solid var(--blue);
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .cmp tr.ours .ds {
+      color: var(--blue-deep);
+    }
+
+    .table-note {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+
+    /* ============ Metrics ============ */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 540px) {
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+
+    .metric:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: #BFD2F0;
+    }
+
+    .metric .abbr {
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: -0.01em;
+    }
+
+    .metric h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 4px 0 8px;
+    }
+
+    .metric p {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .model-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .model-chip {
+      font-family: var(--mono);
+      font-size: 13.5px;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      padding: 9px 18px;
+      border-radius: 100px;
+      transition: border-color .18s, color .18s, transform .18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-chip::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      background: var(--blue);
+    }
+
+    .model-chip:hover {
+      border-color: var(--blue);
+      color: var(--blue-deep);
+      transform: translateY(-2px);
+    }
+
+    /* ============ Video placeholders ============ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .video-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .video-ph {
+      aspect-ratio: 16 / 9;
+      position: relative;
+      background: var(--viewport-bg);
+      background-image:
+        linear-gradient(var(--viewport-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--viewport-grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .video-ph .play {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(91, 155, 255, 0.14);
+      border: 1.5px solid rgba(91, 155, 255, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s, background .2s;
+    }
+
+    .video-card:hover .play {
+      transform: scale(1.1);
+      background: rgba(91, 155, 255, 0.25);
+    }
+
+    .video-ph .play svg {
+      width: 20px;
+      height: 20px;
+      color: #9CC1FF;
+      margin-left: 3px;
+    }
+
+    .video-ph .soon-tag {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #7E96BC;
+    }
+
+    .video-card .vc-body {
+      padding: 16px 18px 18px;
+    }
+
+    .video-card h4 {
+      font-size: 15.5px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .video-card p {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ============ BibTeX ============ */
+    .bibtex-box {
+      position: relative;
+      background: var(--viewport-bg);
+      border-radius: 16px;
+      padding: 26px 28px;
+      overflow-x: auto;
+    }
+
+    .bibtex-box pre {
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: #C7D6EE;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: rgba(122, 160, 220, .12);
+      color: #9FB4D6;
+      border: 1px solid rgba(122, 160, 220, .3);
+      border-radius: 8px;
+      padding: 7px 14px;
+      transition: background .18s, color .18s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(122, 160, 220, .22);
+      color: #fff;
+    }
+
+    .copy-btn.copied {
+      background: rgba(53, 196, 141, .18);
+      border-color: rgba(53, 196, 141, .5);
+      color: #35C48D;
+    }
+
+    /* ============ Footer ============ */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 44px 0 52px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .foot-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: var(--ink-soft);
+    }
+
+    footer img {
+      height: 34px;
+      width: auto;
+      display: block;
+    }
+
+    /* ============ Lightbox ============ */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 4vw;
+      background: rgba(11, 20, 36, 0.9);
+      backdrop-filter: blur(6px);
+      cursor: zoom-out;
+    }
+
+    .lightbox.open {
+      display: flex;
+      animation: fadeIn .2s ease;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 10px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+    }
+
+    :is(a, button):focus-visible {
+      outline: 2.5px solid var(--blue);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============ Nav ============ -->
+  <nav class="nav" aria-label="Main">
+    <div class="nav-inner">
+      <a href="#top" class="wordmark"><span class="pin">◈</span>HumanoidVLN</a>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#platform">Platform</a>
+        <a href="#scenes">Scenes</a>
+        <a href="#instructions">Instructions</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#videos">Videos</a>
+        <a href="#bibtex">BibTeX</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ Hero ============ -->
+  <header class="hero" id="top">
+    <div class="wrap-wide">
+      <div class="hero-eyebrow"><span class="dot"></span>Humanoids 2026 &middot; Under Review</div>
+      <h1 class="title">HumanoidVLN: a physics-grounded simulator &amp; benchmark for <span
+          class="accent">vision-language navigation</span> across diverse humanoid embodiments</h1>
+      <p class="subtitle">Language in, stable bipedal walking out — evaluated under real physics, not teleportation.</p>
+
+      <p class="authors">Anonymous Authors</p>
+      <p class="affil">Anonymous Institution &nbsp;·&nbsp; Under double-blind review</p>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          Paper<span class="soon">soon</span>
+        </a>
+        <!-- <a class="btn btn-ghost" href="#" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H4z"/><path d="m4 20 4-4h12"/></svg>
+          arXiv<span class="soon">soon</span>
+        </a> -->
+        <a class="btn btn-ghost" href="#videos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polygon points="6 3 20 12 6 21 6 3" />
+          </svg>
+          Video<span class="soon">soon</span>
+        </a>
+        <a class="btn btn-ghost" href="#" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+          Code<span class="soon">soon</span>
+        </a>
+        <a class="btn btn-ghost" href="#" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+          </svg>
+          Dataset<span class="soon">soon</span>
+        </a>
+      </div>
+
+      <!-- Signature: simulator viewport -->
+      <div class="viewport reveal">
+        <div class="viewport-chrome">
+          <span class="rec">Ego-cam &middot; recording</span>
+          <span>Isaac Sim &middot; Internal-A &middot; 12 DoF &middot; 1.61 m</span>
+        </div>
+        <div class="viewport-body">
+          <div class="gridmap" role="img"
+            aria-label="Occupancy map of a curated apartment scene showing the recorded episode trajectory from a start point near a living-room telescope, through the dining area and a bedroom doorway, to a goal at the innermost bedroom window.">
+            <div class="miniplayer" aria-label="Egocentric camera view recorded during the episode">
+              <div class="miniplayer-chrome">
+                <span class="live">Ego view</span>
+                <span class="rgb-tag">RGB · 30 fps</span>
+              </div>
+              <div class="miniplayer-screen">
+                <video muted autoplay loop playsinline preload="auto" poster="images/ego_view_poster.jpg"
+                  src="videos/ego_view_web.mp4"></video>
+              </div>
+              <div class="miniplayer-bar" aria-hidden="true"></div>
+            </div>
+            <svg viewBox="0 0 933 636" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <!-- real occupancy grid, reconstructed from the episode's SLAM map -->
+              <image class="map-bg" href="images/occupancy_map.png" x="0" y="0" width="933" height="636" />
+              <!-- occupancy-cell grid overlay -->
+              <defs>
+                <pattern id="occ-cell" width="28" height="28" patternUnits="userSpaceOnUse">
+                  <path class="grid-line-fine" d="M 28 0 L 0 0 0 28" fill="none" />
+                </pattern>
+                <pattern id="occ-block" width="140" height="140" patternUnits="userSpaceOnUse">
+                  <rect width="140" height="140" fill="url(#occ-cell)" />
+                  <path class="grid-line-strong" d="M 140 0 L 0 0 0 140" fill="none" />
+                </pattern>
+              </defs>
+              <rect class="grid-overlay" x="0" y="0" width="933" height="636" fill="url(#occ-block)" />
+              <!-- landmark labels (approximate, from the instruction annotations) -->
+              <text class="map-label" x="560" y="600">Telescope &amp; plant</text>
+              <text class="map-label" x="388" y="520">Curtain &amp; mirror</text>
+              <text class="map-label" x="500" y="452">Living area</text>
+              <text class="map-label" x="580" y="410">Sofa</text>
+              <text class="map-label" x="420" y="380">TV</text>
+              <text class="map-label" x="495" y="100">Dining area</text>
+              <text class="map-label" x="495" y="240">Dining table &amp; chairs</text>
+              <text class="map-label" x="280" y="135">First bedroom</text>
+              <text class="map-label" x="115" y="300">Innermost bedroom</text>
+              <text class="map-label" x="100" y="409">Bed</text>
+              <text class="map-label" x="158" y="480" style="fill:#FF8A9E">Window</text>
+              <!-- recorded episode trajectory (episode_0003) -->
+              <path id="episode-path" class="path-trace"
+                d="M 588.6 547.6 L 532.5 553.8 L 487.7 536.6 L 474.6 513.9 L 461.5 466.4 L 465.7 350.6 L 450.5 301.0 L 428.5 273.5 L 392.0 257.6 L 311.4 261.1 L 237.0 281.7 L 168.1 288.6 L 152.2 325.1 L 144.7 364.4 L 147.4 412.6 L 156.1 436.1" />
+              <!-- robot marker, JS-driven so it stays in sync with the ego-view clip's runtime (19.575s) -->
+              <g id="robot-marker">
+                <circle id="robot-halo" class="robot-halo" cx="588.6" cy="547.6" r="10" />
+                <circle id="robot-dot" class="robot-dot" cx="588.6" cy="547.6" r="4.5" />
+              </g>
+              <!-- waypoints -->
+              <circle class="waypoint-halo" cx="588.6" cy="547.6" r="10" />
+              <circle class="start-node" cx="588.6" cy="547.6" r="7" />
+              <circle class="waypoint" cx="461.5" cy="466.4" r="4.5" />
+              <circle class="waypoint" cx="392.0" cy="257.6" r="4.5" />
+              <circle class="waypoint" cx="168.1" cy="288.6" r="4.5" />
+              <circle class="waypoint" cx="144.7" cy="364.4" r="4.5" />
+              <!-- goal pin -->
+              <g transform="translate(156.1, 436.1)">
+                <circle class="waypoint-halo" r="11" />
+                <path class="goal-pin"
+                  d="M0-22c-7.2 0-13 5.8-13 13C-13-1.5 0 10 0 10S13-1.5 13-9c0-7.2-5.8-13-13-13Zm0 17.5A4.5 4.5 0 1 1 0-13.5a4.5 4.5 0 0 1 0 9Z" />
+              </g>
+              <!-- start / goal labels -->
+              <text class="map-label" x="600" y="573" style="fill:#35C48D">Start</text>
+              <text class="map-label" x="128" y="458" style="fill:#FF8A5C">Goal</text>
+            </svg>
+          </div>
+          <div class="instr-bar">
+            <span class="tag" id="instr-tag">Fine</span>
+            <p class="instr-text"><span id="typed"></span><span class="caret" aria-hidden="true"></span></p>
+          </div>
+        </div>
+        <div class="viewport-footer">
+          <span>Tracker <b>MPC</b></span>
+          <span>Policy <b>RL locomotion</b></span>
+          <span>Sensors <b>RGB · Depth · IMU</b></span>
+          <span>Planner <b>A* on dilated occupancy map</b></span>
+        </div>
+      </div>
+
+      <!-- Stats strip -->
+      <div class="stats">
+        <div class="stat reveal">
+          <div class="num"><span data-count="4">0</span></div>
+          <div class="lbl">Interchangeable humanoid embodiments</div>
+        </div>
+        <div class="stat reveal">
+          <div class="num"><span data-count="10">0</span>–<span data-count="12">0</span><span class="unit">DoF</span>
+          </div>
+          <div class="lbl">Lower-body degrees of freedom</div>
+        </div>
+        <div class="stat reveal">
+          <div class="num">1.17–1.80<span class="unit">m</span></div>
+          <div class="lbl">Robot heights spanned by the platform</div>
+        </div>
+        <div class="stat reveal">
+          <div class="num">&gt;<span data-count="100">0</span><span class="unit">m²</span></div>
+          <div class="lbl">Navigable floor area per curated scene</div>
+        </div>
+        <div class="stat reveal">
+          <div class="num"><span data-count="4">0</span></div>
+          <div class="lbl">SOTA VLN models plug-and-play</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ Overview / abstract ============ -->
+  <section id="overview">
+    <div class="wrap">
+      <div class="sec-eyebrow reveal">Overview</div>
+      <h2 class="sec-title reveal">Why humanoid VLN needs its own benchmark</h2>
+      <p class="sec-lede reveal">Existing VLN benchmarks move robots by kinematic teleportation, place them in scenes
+        bipeds can't traverse, and pair videos with hallucination-prone automated instructions. HumanoidVLN closes all
+        three gaps at once.</p>
+
+      <div class="abstract-card reveal">
+        <p>Vision-language navigation (VLN) has largely been studied on abstracted mobile agents, leaving a wide
+          sim-to-real gap for humanoid robots, whose gait stability, joint limits, and center-of-mass dynamics
+          fundamentally change what a feasible trajectory is. <b>HumanoidVLN</b> is a physics-grounded simulator and
+          benchmark built on NVIDIA Isaac Sim that evaluates VLN under authentic bipedal embodiment.</p>
+        <p>The platform supports four humanoid configurations spanning 10–12 lower-body DoF and 1.20–1.80&nbsp;m in
+          height, each driven by a hierarchical control stack: an RL policy generates stable low-level gaits while PD or
+          MPC trackers follow global plans. Scenes are curated from artist-designed environments, 3D Gaussian Splatting
+          reconstructions, and robot-captured image streams — all with more than 100&nbsp;m² of navigable area.
+          Navigation instructions are produced by a <b>Dual Generator-Reviewer + Paraphraser</b> multi-agent system with
+          human-in-the-loop verification, yielding annotations that are scalable, linguistically diverse, and physically
+          consistent with the executed trajectories.</p>
+      </div>
+
+      <div style="height: 40px"></div>
+
+      <div class="gaps">
+        <div class="gap-card reveal" style="--accent: var(--blue)">
+          <div class="gap-tag">Gap 01 · Simulation</div>
+          <h3>Teleportation isn't locomotion</h3>
+          <p class="problem">Habitat-style simulators slide robots through space kinematically, bypassing every physical
+            constraint that makes bipedal walking hard. No existing VLN simulator models humanoid embodiment diversity.
+          </p>
+          <p class="solution"><b>Our answer:</b> an Isaac Sim platform where an RL policy commands joint torques and
+            PD/MPC trackers follow the plan — every trajectory is physically executed by the specific morphology under
+            test.</p>
+        </div>
+        <div class="gap-card reveal" style="--accent: var(--violet)">
+          <div class="gap-tag">Gap 02 · Scenes</div>
+          <h3>Most scenes can't fit a biped</h3>
+          <p class="problem">Benchmarks scale scene <em>count</em>, not <em>navigability</em>. Narrow doorways and dense
+            furniture create bottlenecks that a wide-stepping, upright humanoid simply cannot pass.</p>
+          <p class="solution"><b>Our answer:</b> scenes curated for &gt;100&nbsp;m² of traversable floor from GRScenes
+            and SAGE-3D, plus a 3DGS pipeline that reconstructs scenes directly from a walking robot's own camera.</p>
+        </div>
+        <div class="gap-card reveal" style="--accent: var(--green)">
+          <div class="gap-tag">Gap 03 · Instructions</div>
+          <h3>Single-pass VLMs hallucinate space</h3>
+          <p class="problem">Automated instruction pipelines confuse left with right and misalign time; manual
+            annotation is reliable but doesn't scale. And idealized renders miss the camera shake of a real walking
+            robot.</p>
+          <p class="solution"><b>Our answer:</b> egocentric video recorded from the walking simulator, described by a
+            Generator–Reviewer–Paraphraser agent loop, then verified by human annotators.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Platform ============ -->
+  <section id="platform">
+    <div class="wrap-wide">
+      <div class="sec-eyebrow reveal">The Platform</div>
+      <h2 class="sec-title reveal">One simulator, four humanoid bodies</h2>
+      <p class="sec-lede reveal">Every embodiment loads interchangeably into identical environments, so navigation
+        performance can be compared across morphologies under controlled conditions.</p>
+
+      <figure class="figure reveal">
+        <img src="images/simulation_platform.webp"
+          alt="Overview diagram of the humanoid VLN simulation platform: a multi-humanoid library, hierarchical control framework, Isaac Sim environment, dataset generation, and VLN evaluation interface."
+          data-lightbox>
+        <figcaption><b>Platform overview.</b> A multi-humanoid library feeds a hierarchical control stack inside Isaac
+          Sim. The platform records egocentric observation streams (RGB, depth, IMU, camera poses) for dataset
+          construction and exposes a plug-and-play evaluation interface for state-of-the-art VLN models. <em>Click to
+            enlarge.</em></figcaption>
+      </figure>
+
+      <div style="height: 36px"></div>
+
+      <!-- Robot selector -->
+      <div class="robot-lab reveal">
+        <div class="robot-tabs" role="tablist" aria-label="Humanoid configurations">
+          <button class="robot-tab" role="tab" data-robot="A" aria-selected="true">Unitree G1 <span class="meta">12 DoF
+              ·
+              1.32 m</span></button>
+          <button class="robot-tab" role="tab" data-robot="B" aria-selected="false">Unitree H1 <span class="meta">10 DoF
+              ·
+              1.80 m</span></button>
+          <button class="robot-tab" role="tab" data-robot="C" aria-selected="false">Internal-A <span class="meta">12 DoF
+              ·
+              1.61 m</span></button>
+          <button class="robot-tab" role="tab" data-robot="D" aria-selected="false">Internal-B <span class="meta">12 DoF
+              ·
+              1.17 m</span></button>
+        </div>
+        <div class="robot-stage">
+          <div class="silhouette-area">
+            <div class="height-line" id="height-line"><span id="height-label">1.32 m</span></div>
+            <img id="robot-photo" class="robot-photo" src="images/robots/unitreeg1.webp"
+              alt="Unitree G1 humanoid robot render">
+          </div>
+          <div class="robot-facts">
+            <h3 id="rf-name">Unitree G1</h3>
+            <div class="cfg" id="rf-cfg">12 lower-body DoF · 1.32 m</div>
+            <p id="rf-desc">A compact 12-DoF platform. Shorter limbs shift the center of mass lower, changing step
+              reachability and the gait the RL policy converges to — exactly the kind of embodiment variation the
+              benchmark isolates.</p>
+            <div class="fact-row">
+              <span class="fact-chip">DoF <b id="rf-dof">12</b></span>
+              <span class="fact-chip">Height <b id="rf-h">1.32 m</b></span>
+              <span class="fact-chip">Control <b>RL + PD/MPC</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control stack -->
+      <div class="stack-flow reveal">
+        <div class="stack-node">
+          <div class="lvl">High level · Global</div>
+          <h4>PD / MPC path tracker</h4>
+          <p>Converts the global navigation plan into velocity and heading references. Both tracker variants are
+            interchangeable, so tracker fidelity itself becomes an experimental variable.</p>
+        </div>
+        <div class="stack-arrow" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <polyline points="13 5 20 12 13 19" />
+          </svg></div>
+        <div class="stack-node">
+          <div class="lvl">Low level · Local</div>
+          <h4>RL locomotion policy</h4>
+          <p>Commands joint torques directly, producing stable bipedal gaits that respect per-morphology joint limits
+            and center-of-mass dynamics.</p>
+        </div>
+        <div class="stack-arrow" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <polyline points="13 5 20 12 13 19" />
+          </svg></div>
+        <div class="stack-node">
+          <div class="lvl">Output · Physical</div>
+          <h4>Stable bipedal walking</h4>
+          <p>Trajectory following subject to real contact dynamics — with the camera shake and lighting variation of an
+            actual walking robot recorded into the dataset.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Scenes ============ -->
+  <section id="scenes">
+    <div class="wrap">
+      <div class="sec-eyebrow reveal">Scene Suite</div>
+      <h2 class="sec-title reveal">Environments curated for bipedal traversal</h2>
+      <p class="sec-lede reveal">Three complementary scene sources, one admission criterion: a humanoid must actually be
+        able to walk there.</p>
+
+      <div class="scene-grid">
+        <div class="scene-card reveal">
+          <div class="scene-thumb artist">
+            <div class="ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 21h18" />
+                <path d="M5 21V7l8-4v18" />
+                <path d="M19 21V11l-6-4" />
+                <path d="M9 9v.01" />
+                <path d="M9 12v.01" />
+                <path d="M9 15v.01" />
+                <path d="M9 18v.01" />
+              </svg>
+              <span>Preview coming soon</span>
+            </div>
+          </div>
+          <div class="scene-body">
+            <span class="src-tag src-a">A · Artist-designed</span>
+            <h3>GRScenes selections</h3>
+            <p>Physically realistic, artist-authored indoor environments — filtered down to layouts with wide,
+              obstacle-sparse corridors a biped can pass.</p>
+          </div>
+        </div>
+        <div class="scene-card reveal">
+          <div class="scene-thumb gs">
+            <div class="ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="6" cy="7" r="2.4" />
+                <circle cx="17" cy="5.5" r="1.8" />
+                <circle cx="12" cy="12" r="3" />
+                <circle cx="5.5" cy="17" r="1.8" />
+                <circle cx="18" cy="16.5" r="2.4" />
+              </svg>
+              <span>Preview coming soon</span>
+            </div>
+          </div>
+          <div class="scene-body">
+            <span class="src-tag src-gs">GS · Gaussian Splatting</span>
+            <h3>SAGE-3D + custom gsplat pipeline</h3>
+            <p>Photorealistic 3DGS reconstructions with collision meshes extracted via unbiased depth rendering,
+              depth-normal consistency, and TSDF fusion.</p>
+          </div>
+        </div>
+        <div class="scene-card reveal">
+          <div class="scene-thumb robot">
+            <div class="ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="5" y="4" width="14" height="12" rx="3" />
+                <circle cx="9.5" cy="10" r="1.2" fill="currentColor" />
+                <circle cx="14.5" cy="10" r="1.2" fill="currentColor" />
+                <path d="M12 16v3" />
+                <path d="M8 22h8" />
+                <path d="M12 4V2" />
+              </svg>
+              <span>Preview coming soon</span>
+            </div>
+          </div>
+          <div class="scene-body">
+            <span class="src-tag src-r">R · Robot-captured</span>
+            <h3>Reconstructed from the robot's own walk</h3>
+            <p>Scenes built from onboard image streams via VI-SLAM, with IMU + Laplacian sharpness filtering to reject
+              gait-blurred frames — a scalable path to deployment-driven scene generation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="navigable-note reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        <div><b>Navigability criterion.</b> Every scene admitted to the benchmark exceeds 100&nbsp;m² of traversable
+          floor area, verified against the dilated occupancy footprint of the tallest supported humanoid.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Instructions / MAS ============ -->
+  <section id="instructions">
+    <div class="wrap">
+      <div class="sec-eyebrow reveal">Instruction Generation</div>
+      <h2 class="sec-title reveal">Agents draft, agents critique, humans verify</h2>
+      <p class="sec-lede reveal">The Dual Generator-Reviewer + Paraphraser multi-agent system replaces single-pass VLM
+        generation with an iterative loop of drafting, spatial verification against the scene graph, and stylistic
+        synthesis — then a human takes the final pass.</p>
+
+      <figure class="figure reveal">
+        <img src="images/mas_overall_pipeline.png"
+          alt="Pipeline diagram: egocentric navigation video and 2D occupancy map feed a Dual Generator-Reviewer plus Paraphraser multi-agent system, producing structured JSON with fine-grained and coarse-grained instructions."
+          data-lightbox>
+        <figcaption><b>Generation pipeline.</b> Egocentric video and a 2D occupancy map enter the MAS; structured JSON
+          with fine- and coarse-grained instructions comes out. The Paraphraser is constrained to preserve action order
+          and landmark order. <em>Click to enlarge.</em></figcaption>
+      </figure>
+
+      <!-- Interactive stepper -->
+      <div class="mas-demo reveal">
+        <div class="mas-steps" role="tablist" aria-label="Multi-agent pipeline steps">
+          <button class="mas-step" role="tab" data-step="0" aria-selected="true" style="--step-color: var(--amber)">
+            <span class="n">1</span><span class="t">Generator drafts</span>
+          </button>
+          <button class="mas-step" role="tab" data-step="1" aria-selected="false" style="--step-color: var(--blue)">
+            <span class="n">2</span><span class="t">Reviewer critiques</span>
+          </button>
+          <button class="mas-step" role="tab" data-step="2" aria-selected="false" style="--step-color: var(--green)">
+            <span class="n">3</span><span class="t">Paraphraser styles</span>
+          </button>
+          <button class="mas-step" role="tab" data-step="3" aria-selected="false" style="--step-color: var(--violet)">
+            <span class="n">4</span><span class="t">Human verifies</span>
+          </button>
+        </div>
+
+        <div class="mas-panel active" data-panel="0">
+          <div>
+            <div class="agent-head">
+              <div class="agent-avatar av-gen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg></div>
+              <div>
+                <h3>Generator (Describer)</h3>
+                <div class="role">Visual-linguistic bridge · Chain-of-Thought</div>
+              </div>
+            </div>
+            <p class="desc">Takes the chronological egocentric frames and spatial prior, performs <b>route
+                understanding</b> (turn and transition detection) and <b>landmark mining</b>, and drafts a step-by-step
+              instruction in second-person imperative voice.</p>
+          </div>
+          <div>
+            <div class="msg msg-gen"><span class="from">Generator · Draft 1</span>"Go straight down the hallway, turn
+              <span class="flag">left</span> at the painting, then pass the sofa and stop at the bookshelf."
+            </div>
+          </div>
+        </div>
+
+        <div class="mas-panel" data-panel="1">
+          <div>
+            <div class="agent-head">
+              <div class="agent-avatar av-rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg></div>
+              <div>
+                <h3>Reviewer (Verifier)</h3>
+                <div class="role">Logic-driven critic · scene-graph grounded</div>
+              </div>
+            </div>
+            <p class="desc">Cross-checks the draft against a rigid <b>spatial-semantic scene graph</b> from simulator
+              metadata and the observed <b>trajectory data</b>. Physically implausible relations trigger a correction,
+              and the loop repeats until the text is spatially and temporally consistent.</p>
+          </div>
+          <div>
+            <div class="msg msg-rev"><span class="from">Reviewer · Critique</span>Trajectory heading changes by −87° at
+              the painting: that left turn is actually a <b>right</b> turn. Revise.</div>
+            <div class="msg msg-gen"><span class="from">Generator · Draft 2 ✓ verified</span>"Go straight down the
+              hallway, turn <span class="fix">right</span> at the painting, then pass the sofa and stop at the
+              bookshelf."</div>
+          </div>
+        </div>
+
+        <div class="mas-panel" data-panel="2">
+          <div>
+            <div class="agent-head">
+              <div class="agent-avatar av-par"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg></div>
+              <div>
+                <h3>Paraphraser (Synthesizer)</h3>
+                <div class="role">Stylistic adaptation · order-preserving</div>
+              </div>
+            </div>
+            <p class="desc">Rewrites the verified instruction into diverse linguistic styles — <b>formal, natural,
+                casual</b> — without altering the grounding facts. Action order and landmark order are hard constraints.
+            </p>
+          </div>
+          <div>
+            <div class="msg msg-par"><span class="from">Paraphraser · Casual</span>"Head down the hall, hang a right at
+              the painting — past the couch, bookshelf's right there."</div>
+          </div>
+        </div>
+
+        <div class="mas-panel" data-panel="3">
+          <div>
+            <div class="agent-head">
+              <div class="agent-avatar av-hum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg></div>
+              <div>
+                <h3>Human annotator</h3>
+                <div class="role">Final verification pass</div>
+              </div>
+            </div>
+            <p class="desc">Human annotators correct residual errors and flag edge cases — the scalability of automation
+              with the reliability of manual annotation, <b>without its full cost</b>.</p>
+          </div>
+          <div>
+            <div class="msg msg-hum"><span class="from">Annotator · Approved</span>Episode 0413 ✓ — instruction
+              grounded, landmarks consistent, endpoint condition explicit. Packaged to JSON.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- <figure class="figure reveal" style="margin-top: 36px;">
+        <img src="images/s3_2_desc_review_loop.png"
+          alt="Internal loop diagram of the Dual Generator-Reviewer architecture, showing the Reviewer critiquing against a scene-graph prior and trajectory data."
+          data-lightbox>
+        <figcaption><b>Inside the loop.</b> The Reviewer checks each draft against the scene-graph prior (semantic
+          relationships, object connectivity) and trajectory data (path, actions, turns, positions), forcing refinements
+          until spatial hallucinations are resolved. <em>Click to enlarge.</em></figcaption>
+      </figure> -->
+
+      <!-- Taxonomy -->
+      <div class="taxo reveal">
+        <div class="taxo-toggle" role="tablist" aria-label="Instruction granularity">
+          <button data-grain="fine" role="tab" aria-selected="true">Fine-grained</button>
+          <button data-grain="coarse" role="tab" aria-selected="false">Coarse-grained</button>
+        </div>
+        <p class="taxo-hint" id="taxo-hint">Detailed step-by-step guidance: explicit turns, passed landmarks, and
+          side-of-path locations.</p>
+        <div class="style-row" id="style-row" hidden>
+          <button class="style-chip" data-style="formal" aria-selected="true">Formal</button>
+          <button class="style-chip" data-style="natural" aria-selected="false">Natural</button>
+          <button class="style-chip" data-style="casual" aria-selected="false">Casual</button>
+        </div>
+        <div class="instr-output">
+          <span class="lab" id="out-label">fine · verified</span>
+          <span id="out-text">"Go straight down the hallway, turn right at the painting on your left, pass the sofa on
+            your right, and stop in front of the bookshelf."</span>
+        </div>
+        <p class="taxo-schema">Each episode ships as structured JSON: <code>landmarks[]</code>
+          <code>route_summary</code> <code>fine</code> <code>coarse</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Benchmark ============ -->
+  <section id="benchmark">
+    <div class="wrap-wide">
+      <div class="sec-eyebrow reveal">The Benchmark</div>
+      <h2 class="sec-title reveal">Where HumanoidVLN sits in the landscape</h2>
+      <p class="sec-lede reveal">No existing benchmark jointly delivers humanoid embodiment diversity,
+        navigability-curated scenes, and verified instruction generation.</p>
+
+      <div class="table-scroll reveal">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>Dataset</th>
+              <th>Simulator</th>
+              <th>Humanoid</th>
+              <th>DoF range</th>
+              <th>Scene source</th>
+              <th>Instruction</th>
+              <th>Action space</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ds">R2R <span style="color:var(--muted);font-weight:400">(2018)</span></td>
+              <td>Matterport3D</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Graph</td>
+            </tr>
+            <tr>
+              <td class="ds">RxR <span style="color:var(--muted);font-weight:400">(2020)</span></td>
+              <td>Matterport3D</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Graph</td>
+            </tr>
+            <tr>
+              <td class="ds">REVERIE <span style="color:var(--muted);font-weight:400">(2020)</span></td>
+              <td>Matterport3D</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Graph</td>
+            </tr>
+            <tr>
+              <td class="ds">VLN-CE <span style="color:var(--muted);font-weight:400">(2020)</span></td>
+              <td>Habitat</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Discrete</td>
+            </tr>
+            <tr>
+              <td class="ds">ALFRED <span style="color:var(--muted);font-weight:400">(2020)</span></td>
+              <td>AI2-THOR</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Discrete</td>
+            </tr>
+            <tr>
+              <td class="ds">AerialVLN <span style="color:var(--muted);font-weight:400">(2023)</span></td>
+              <td>AirSim</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>Human</td>
+              <td>Discrete</td>
+            </tr>
+            <tr>
+              <td class="ds">LH-VLN <span style="color:var(--muted);font-weight:400">(2025)</span></td>
+              <td>Habitat</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>VLM</td>
+              <td>Graph</td>
+            </tr>
+            <tr>
+              <td class="ds">GSA-R2R <span style="color:var(--muted);font-weight:400">(2025)</span></td>
+              <td>Habitat</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">GS</span></td>
+              <td>VLM</td>
+              <td>Graph</td>
+            </tr>
+            <tr>
+              <td class="ds">VLN-PE <span style="color:var(--muted);font-weight:400">(2025)</span></td>
+              <td>Isaac</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>VLM</td>
+              <td>Hybrid</td>
+            </tr>
+            <tr>
+              <td class="ds">VLNVerse <span style="color:var(--muted);font-weight:400">(2025)</span></td>
+              <td>Isaac</td>
+              <td class="no">—</td>
+              <td class="no">—</td>
+              <td><span class="pill">A</span></td>
+              <td>VLM</td>
+              <td>Hybrid</td>
+            </tr>
+            <tr class="ours">
+              <td class="ds">HumanoidVLN <span style="color:var(--blue);font-weight:600">(Ours, 2026)</span></td>
+              <td>Isaac (Humanoid)</td>
+              <td class="yes">✓</td>
+              <td>10–12</td>
+              <td><span class="pill hl">A + GS + R</span></td>
+              <td><span class="pill hl">MAS + Human</span></td>
+              <td>Hybrid</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note reveal"><b>Scene source</b> — A: artist-designed · GS: 3D Gaussian Splatting reconstruction ·
+        R: robot-captured reconstruction. &nbsp;<b>Instruction</b> — Human: manual annotation · VLM: automated
+        generation · MAS + Human: Dual Generator-Reviewer + Paraphraser multi-agent system with human-in-the-loop
+        verification.</p>
+
+      <div style="height: 44px"></div>
+
+      <h2 class="sec-title reveal" style="font-size: clamp(21px, 2.6vw, 27px);">Evaluation protocol</h2>
+      <div class="metric-grid">
+        <div class="metric reveal">
+          <div class="abbr">SR</div>
+          <h4>Success Rate</h4>
+          <p>Share of episodes where the agent stops within a threshold distance of the target.</p>
+        </div>
+        <div class="metric reveal">
+          <div class="abbr">NE</div>
+          <h4>Navigation Error</h4>
+          <p>Average distance between the agent's stopping position and the goal.</p>
+        </div>
+        <div class="metric reveal">
+          <div class="abbr">SPL</div>
+          <h4>Success weighted by Path Length</h4>
+          <p>Trajectory efficiency — success discounted by how far the agent wandered.</p>
+        </div>
+        <div class="metric reveal">
+          <div class="abbr">nDTW</div>
+          <h4>Normalized Dynamic Time Warping</h4>
+          <p>Path fidelity — how closely the agent adhered to the instructed route.</p>
+        </div>
+        <div class="metric reveal">
+          <div class="abbr">OS</div>
+          <h4>Oracle Success</h4>
+          <p>Measures a robot's maximum capability to reach a destination, assuming it makes the perfect decision about
+            when to stop.</p>
+        </div>
+      </div>
+
+      <div class="model-chips reveal">
+        <span style="font-size: 14px; color: var(--muted); align-self: center; margin-right: 4px;">Plug-and-play VLN
+          models:</span>
+        <!-- <span class="model-chip">UniNAVID</span> -->
+        <span class="model-chip">NAVILA</span>
+        <span class="model-chip">DualVLN</span>
+        <span class="model-chip">StreamVLN</span>
+        <span class="model-chip">JanusVLN</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Videos ============ -->
+  <section id="videos">
+    <div class="wrap-wide">
+      <div class="sec-eyebrow reveal">Demonstrations</div>
+      <h2 class="sec-title reveal">See it walk</h2>
+      <p class="sec-lede reveal">Rollout videos are being finalized alongside the paper — placeholders below show what's
+        coming.</p>
+
+      <div class="video-grid">
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>Cross-embodiment rollout</h4>
+            <p>The same instruction executed by all four humanoids in an identical scene.</p>
+          </div>
+        </div>
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>Egocentric observation stream</h4>
+            <p>RGB, depth, and IMU as recorded from the walking robot — gait shake included.</p>
+          </div>
+        </div>
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>PD vs. MPC path tracking</h4>
+            <p>How tracker fidelity changes downstream navigation success across morphologies.</p>
+          </div>
+        </div>
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>3DGS scene fly-through</h4>
+            <p>Photorealistic Gaussian Splatting reconstructions with extracted collision meshes.</p>
+          </div>
+        </div>
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>Robot-captured reconstruction</h4>
+            <p>From onboard image stream to simulation-ready scene, end to end.</p>
+          </div>
+        </div>
+        <div class="video-card reveal">
+          <div class="video-ph">
+            <div class="play"><svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg></div><span class="soon-tag">Video coming soon</span>
+          </div>
+          <div class="vc-body">
+            <h4>VLN model benchmark runs</h4>
+            <p>NAVILA, StreamVLN, and friends attempting the same curated episodes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BibTeX ============ -->
+  <section id="bibtex">
+    <div class="wrap">
+      <div class="sec-eyebrow reveal">Citation</div>
+      <h2 class="sec-title reveal">BibTeX</h2>
+      <div class="bibtex-box reveal">
+        <button class="copy-btn" id="copy-bib">Copy</button>
+        <pre id="bib-text">@inproceedings{anonymous2026humanoidvln,
+  title     = {{HumanoidVLN}: A Physics-Grounded Simulator and Benchmark for
+               Vision-Language Navigation Across Diverse Humanoid Embodiments},
+  author    = {Anonymous Authors},
+  booktitle = {IEEE-RAS International Conference on Humanoid Robots (Humanoids)},
+  year      = {2026}
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap-wide foot-inner">
+      <div style="font-family: var(--display); font-weight: 700; color: var(--ink);">HumanoidVLN</div>
+      <div>
+        Anonymous Authors · Website template inspired by <a href="https://github.com/nerfies/nerfies.github.io"
+          rel="noopener">Nerfies</a>.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <script>
+    (function () {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* ---- Reveal on scroll ---- */
+      const revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && !reduceMotion) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach(el => io.observe(el));
+      } else {
+        revealEls.forEach(el => el.classList.add('visible'));
+      }
+
+      /* ---- Scrollspy ---- */
+      const navLinks = document.querySelectorAll('.nav-links a');
+      const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+      if ('IntersectionObserver' in window) {
+        const spy = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+            }
+          });
+        }, { rootMargin: '-30% 0px -60% 0px' });
+        sections.forEach(s => spy.observe(s));
+      }
+
+      /* ---- Robot marker + instruction: both locked to the ego-view clip's playback ---- */
+      const instructions = [
+        { tag: 'Fine', coarse: false, text: 'Walk forward past the telescope and plant on your left, then pass the black curtain and mirror. Turn left, then continue straight from the living area into the dining area, passing the TV and the sofa, then pass the dining table and chairs. Turn left, pass the first bedroom on your right to enter the innermost bedroom through the doorway. Turn left, go straight, pass the bed and stop at the window.' },
+        { tag: 'Coarse · Formal', coarse: true, text: 'Proceed forward past the telescope and plant on the left; then pass the black curtain and mirror. Turn left, then continue straight from the living area into the dining area, passing the TV and the sofa, then pass the dining table and chairs. Turn left, pass the first bedroom on the right to enter the innermost bedroom via the doorway. Turn left, advance straight, pass the bed, and stop at the window.' },
+        { tag: 'Coarse · Natural', coarse: true, text: 'Keep walking past the telescope and plant on your left, then go by the black curtain and mirror. Turn left, then head straight from the living area into the dining area, passing the TV and the sofa, and then pass the dining table and chairs. Turn left, pass the first bedroom on your right to step through the doorway into the innermost bedroom. Turn left, go straight, walk past the bed, and finally, stop at the window.' },
+        { tag: 'Coarse · Casual', coarse: true, text: 'Walk past the telescope and plant on your left, then pass the black curtain and mirror. Turn left, keep going straight from the living area into the dining area, passing the TV and the sofa, then pass the table and chairs. Turn left, pass the first bedroom on your right to go through the doorway into the innermost bedroom. Turn left, go straight, pass the bed, and stop right at the window.' }
+      ];
+      const typedEl = document.getElementById('typed');
+      const instrTag = document.getElementById('instr-tag');
+      const robotPath = document.getElementById('episode-path');
+      const robotMarker = document.getElementById('robot-marker');
+      const robotHalo = document.getElementById('robot-halo');
+      const robotDot = document.getElementById('robot-dot');
+      const egoVideo = document.querySelector('.miniplayer-screen video');
+
+      function setInstrTag(ins) {
+        instrTag.textContent = ins.tag;
+        instrTag.classList.toggle('tag-coarse', ins.coarse);
+      }
+
+      if (reduceMotion) {
+        if (robotMarker) robotMarker.style.display = 'none';
+        setInstrTag(instructions[0]);
+        typedEl.textContent = '"' + instructions[0].text + '"';
+      } else {
+        const totalLen = robotPath ? robotPath.getTotalLength() : 0;
+        const FALLBACK_DURATION_MS = 19575; // videos/ego_view_web.mp4 runtime, used until real video metadata loads
+        const TYPE_FRACTION = 0.3;   // portion of one loop spent typing the sentence out
+        const DELETE_FRACTION = 0.06; // portion spent erasing, right before the loop (and video) restarts
+
+        let fallbackStart = null;
+        let loopCount = 0;
+        let curIdx = -1;
+
+        // The 'seeked' event fires precisely when a looping <video> restarts (the loop
+        // is implemented as a real seek-to-start), so this only fires on genuine loop
+        // boundaries - unlike polling currentTime, it can't misfire on ordinary playback jitter.
+        if (egoVideo) {
+          egoVideo.addEventListener('seeked', () => {
+            if (egoVideo.currentTime < 0.15) loopCount++;
+          });
+        }
+
+        function cyclePosition(ts) {
+          if (egoVideo && egoVideo.duration && !isNaN(egoVideo.duration)) {
+            return { t: egoVideo.currentTime * 1000, duration: egoVideo.duration * 1000, cycle: loopCount };
+          }
+          // Video metadata not ready yet (or no video present) - keep things moving on a same-length fallback clock.
+          if (fallbackStart === null) fallbackStart = ts;
+          const elapsed = ts - fallbackStart;
+          return {
+            t: elapsed % FALLBACK_DURATION_MS,
+            duration: FALLBACK_DURATION_MS,
+            cycle: Math.floor(elapsed / FALLBACK_DURATION_MS)
+          };
+        }
+
+        const tick = (ts) => {
+          const { t, duration, cycle } = cyclePosition(ts);
+          const idx = cycle % instructions.length;
+          if (idx !== curIdx) { curIdx = idx; setInstrTag(instructions[idx]); }
+
+          const full = '"' + instructions[curIdx].text + '"';
+          const typeMs = duration * TYPE_FRACTION;
+          const deleteMs = duration * DELETE_FRACTION;
+          let shown;
+          if (t < typeMs) {
+            shown = Math.round((t / typeMs) * full.length);
+          } else if (t < duration - deleteMs) {
+            shown = full.length;
+          } else {
+            const p = (t - (duration - deleteMs)) / deleteMs;
+            shown = Math.round(full.length * (1 - p));
+          }
+          typedEl.textContent = full.slice(0, Math.max(0, shown));
+
+          if (robotPath && robotHalo && robotDot) {
+            const pt = robotPath.getPointAtLength((t / duration) * totalLen);
+            robotHalo.setAttribute('cx', pt.x); robotHalo.setAttribute('cy', pt.y);
+            robotDot.setAttribute('cx', pt.x); robotDot.setAttribute('cy', pt.y);
+          }
+          requestAnimationFrame(tick);
+        };
+        setInstrTag(instructions[0]);
+        requestAnimationFrame(tick);
+      }
+
+      /* ---- Count-up stats ---- */
+      const counters = document.querySelectorAll('[data-count]');
+      function animateCount(el) {
+        const target = +el.dataset.count;
+        if (reduceMotion) { el.textContent = target; return; }
+        const dur = 1100, t0 = performance.now();
+        (function frame(t) {
+          const p = Math.min((t - t0) / dur, 1);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(frame);
+        })(t0);
+      }
+      if ('IntersectionObserver' in window) {
+        const cio = new IntersectionObserver((entries) => {
+          entries.forEach(e => { if (e.isIntersecting) { animateCount(e.target); cio.unobserve(e.target); } });
+        }, { threshold: 0.6 });
+        counters.forEach(c => cio.observe(c));
+      } else {
+        counters.forEach(c => c.textContent = c.dataset.count);
+      }
+
+      /* ---- Robot selector ---- */
+      const robots = {
+        A: { name: "Unitree G1", dof: 12, h: 1.32, img: 'images/robots/unitreeg1.webp', desc: 'The Unitree G1 is an agile, compact humanoid robot designed for embodied AI research, robotics development, and educational use. Standing roughly 1.3 meters tall and weighing 35 kg.' },
+        B: { name: "Unitree H1", dof: 10, h: 1.80, img: 'images/robots/unitreeh1.webp', desc: 'The Unitree H1 is a full-scale, dynamic bipedal robot designed for R&D and embodied AI. Known for its impressive agility and industry-leading speed, it stands 1.8 meters tall, weighs about 47 kg.' },
+        C: { name: "Internal-A", dof: 12, h: 1.61, img: 'images/robots/internal_a.webp', desc: 'An internal full-size 12-DoF humanoid close to adult human proportions — the reference configuration for egocentric dataset recording, with camera height matching typical human viewpoints.' },
+        D: { name: "Internal-B", dof: 12, h: 1.17, img: 'images/robots/internal_b.webp', desc: 'The smallest embodiment. Its low camera viewpoint and short stride change both what the robot sees and how far each step carries it, stress-testing instruction grounding at child height.' }
+      };
+      const tabs = document.querySelectorAll('.robot-tab');
+      const photo = document.getElementById('robot-photo');
+      const hLine = document.getElementById('height-line');
+      const hLabel = document.getElementById('height-label');
+      const AREA_H = 320, MAX_M = 2.0;
+      function selectRobot(key) {
+        const r = robots[key];
+        tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.robot === key)));
+        const px = Math.round((r.h / MAX_M) * (AREA_H - 24));
+        photo.src = r.img;
+        photo.alt = r.name + ' humanoid robot render';
+        photo.setAttribute('height', px);
+        hLine.style.bottom = px + 'px';
+        hLabel.textContent = r.h.toFixed(2) + ' m';
+        document.getElementById('rf-name').textContent = r.name;
+        document.getElementById('rf-cfg').textContent = r.dof + ' lower-body DoF · ' + r.h.toFixed(2) + ' m';
+        document.getElementById('rf-desc').textContent = r.desc;
+        document.getElementById('rf-dof').textContent = r.dof;
+        document.getElementById('rf-h').textContent = r.h.toFixed(2) + ' m';
+      }
+      tabs.forEach(t => t.addEventListener('click', () => selectRobot(t.dataset.robot)));
+      selectRobot('A');
+
+      /* ---- MAS stepper ---- */
+      const steps = document.querySelectorAll('.mas-step');
+      const panels = document.querySelectorAll('.mas-panel');
+      let masTimer = null, masIdx = 0, masInteracted = false;
+      function showStep(i) {
+        masIdx = i;
+        steps.forEach((s, j) => s.setAttribute('aria-selected', String(i === j)));
+        panels.forEach((p, j) => p.classList.toggle('active', i === j));
+      }
+      steps.forEach((s, i) => s.addEventListener('click', () => { masInteracted = true; clearInterval(masTimer); showStep(i); }));
+      if (!reduceMotion && 'IntersectionObserver' in window) {
+        const mio = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting && !masInteracted && !masTimer) {
+              masTimer = setInterval(() => showStep((masIdx + 1) % steps.length), 5000);
+            }
+          });
+        }, { threshold: 0.4 });
+        mio.observe(document.querySelector('.mas-demo'));
+      }
+
+      /* ---- Taxonomy tabs ---- */
+      const fineText = '"Go straight down the hallway, turn right at the painting on your left, pass the sofa on your right, and stop in front of the bookshelf."';
+      const coarse = {
+        formal: '"Proceed to the bookshelf situated beyond the seating area, in the room at the end of the hallway."',
+        natural: '"Could you head over to the bookshelf? It’s just past the sofa, down at the end of the hall."',
+        casual: '"Bookshelf’s down the hall — past the couch, can’t miss it."'
+      };
+      const grainBtns = document.querySelectorAll('.taxo-toggle button');
+      const styleRow = document.getElementById('style-row');
+      const styleChips = document.querySelectorAll('.style-chip');
+      const outText = document.getElementById('out-text');
+      const outLabel = document.getElementById('out-label');
+      const hint = document.getElementById('taxo-hint');
+      let grain = 'fine', style = 'formal';
+      function renderTaxo() {
+        if (grain === 'fine') {
+          styleRow.hidden = true;
+          outText.textContent = fineText;
+          outLabel.textContent = 'fine · verified';
+          hint.textContent = 'Detailed step-by-step guidance: explicit turns, passed landmarks, and side-of-path locations.';
+        } else {
+          styleRow.hidden = false;
+          outText.textContent = coarse[style];
+          outLabel.textContent = 'coarse · ' + style;
+          hint.textContent = 'High-level, goal-oriented commands. The Paraphraser produces three stylistic variations of each.';
+        }
+      }
+      grainBtns.forEach(b => b.addEventListener('click', () => {
+        grain = b.dataset.grain;
+        grainBtns.forEach(x => x.setAttribute('aria-selected', String(x === b)));
+        renderTaxo();
+      }));
+      styleChips.forEach(c => c.addEventListener('click', () => {
+        style = c.dataset.style;
+        styleChips.forEach(x => x.setAttribute('aria-selected', String(x === c)));
+        renderTaxo();
+      }));
+      renderTaxo();
+
+      /* ---- Lightbox ---- */
+      const lb = document.getElementById('lightbox');
+      const lbImg = document.getElementById('lightbox-img');
+      document.querySelectorAll('[data-lightbox]').forEach(img => {
+        img.addEventListener('click', () => {
+          lbImg.src = img.src; lbImg.alt = img.alt;
+          lb.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+      function closeLb() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+      lb.addEventListener('click', closeLb);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) closeLb(); });
+
+      /* ---- BibTeX copy ---- */
+      const copyBtn = document.getElementById('copy-bib');
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(document.getElementById('bib-text').textContent);
+          copyBtn.textContent = 'Copied ✓';
+          copyBtn.classList.add('copied');
+          setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 2000);
+        } catch (err) {
+          copyBtn.textContent = 'Select & copy manually';
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
