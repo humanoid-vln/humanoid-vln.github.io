@@ -9,7 +9,7 @@
   <meta property="og:title" content="HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots">
   <meta property="og:description"
     content="An Isaac Sim platform, navigability-curated scenes, and a multi-agent instruction pipeline for humanoid vision-language navigation.">
-  <meta property="og:image" content="images/simulation_platform.webp">
+  <meta property="og:image" content="images/platform.png">
   <title>HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
@@ -2594,12 +2594,12 @@
         performance can be compared across morphologies under controlled conditions.</p>
 
       <figure class="figure reveal">
-        <img src="images/simulation_platform.webp"
+        <img src="images/platform.png"
           alt="Overview diagram of the humanoid VLN simulation platform: a multi-humanoid library, hierarchical control framework, Isaac Sim environment, dataset generation, and VLN evaluation interface."
           data-lightbox>
-        <figcaption><b>Platform overview.</b> A multi-humanoid library feeds a hierarchical control stack inside Isaac
-          Sim. The platform records egocentric observation streams (RGB, depth, IMU, camera poses) for dataset
-          construction and exposes a plug-and-play evaluation interface for state-of-the-art VLN models. <em>Click to
+        <figcaption><b>Platform overview.</b> Overview of the HumanoidVLN physics-grounded benchmark pipeline, from
+          embodiment-diverse humanoid platforms and hierarchical control to scene curation, episode construction,
+          multimodal dataset generation, and plug-and-play VLN evaluation. <em>Click to
             enlarge.</em></figcaption>
       </figure>
 
@@ -3127,6 +3127,12 @@
           <p>Measures a robot's maximum capability to reach a destination, assuming it makes the perfect decision about
             when to stop.</p>
         </div>
+        <div class="metric reveal">
+          <div class="abbr">FR</div>
+          <h4>Fall Rate</h4>
+          <p>The fraction of steps in which the robot is detected to have fallen, measuring locomotion stability under
+            physical execution.</p>
+        </div>
       </div>
 
       <div class="model-chips reveal">
@@ -3227,7 +3233,7 @@
       <h2 class="sec-title reveal">BibTeX</h2>
       <div class="bibtex-box reveal">
         <button class="copy-btn" id="copy-bib">Copy</button>
-        <pre id="bib-text">@inproceedings{anonymous2026humanoidvln,
+        <pre id="bib-text">@preprint{anonymous2026humanoidvln,
   title     = {{HumanoidVLN}: A Physics-Grounded Simulator and Benchmark for
                Vision-Language Navigation Across Diverse Humanoid Embodiments},
   author    = {Anonymous Authors},
