@@ -1102,71 +1102,21 @@
       text-align: center;
     }
 
-    .hbar-chart {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+    #class-chart {
+      width: 100%;
+      height: auto;
+      overflow: visible;
     }
 
-    .hbar-row {
-      display: grid;
-      grid-template-columns: 132px 1fr 24px;
-      align-items: center;
-      gap: 8px;
-      border-radius: 6px;
-      padding: 3px 4px;
-      transition: background .15s;
+    .class-bar {
+      cursor: pointer;
+      transition: opacity .15s;
     }
 
-    .hbar-row:hover,
-    .hbar-row:focus {
-      background: var(--paper);
+    .class-bar:hover,
+    .class-bar:focus {
+      opacity: .68;
       outline: none;
-    }
-
-    .hbar-label {
-      font-size: 12px;
-      color: var(--ink-soft);
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .hbar-track {
-      background: var(--line-soft);
-      border-radius: 4px;
-      height: 13px;
-      display: block;
-    }
-
-    .hbar-fill {
-      display: block;
-      height: 100%;
-      border-radius: 4px;
-      transition: filter .15s;
-      min-width: 3px;
-    }
-
-    .hbar-row:hover .hbar-fill,
-    .hbar-row:focus .hbar-fill {
-      filter: brightness(1.12);
-    }
-
-    .hbar-count {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    @media (max-width: 480px) {
-      .hbar-row {
-        grid-template-columns: 96px 1fr 22px;
-      }
-
-      .hbar-label {
-        font-size: 10.5px;
-      }
     }
 
     .chart-tooltip {
@@ -1596,8 +1546,8 @@
       color: var(--ink);
     }
 
-    /* ============ MAS stepper ============ */
-    .mas-demo {
+    /* ============ MAA stepper ============ */
+    .maa-demo {
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -1606,19 +1556,19 @@
       margin-top: 34px;
     }
 
-    .mas-steps {
+    .maa-steps {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       border-bottom: 1px solid var(--line-soft);
     }
 
     @media (max-width: 760px) {
-      .mas-steps {
+      .maa-steps {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    .mas-step {
+    .maa-step {
       font-family: var(--body);
       background: none;
       border: none;
@@ -1630,11 +1580,11 @@
       transition: background .18s;
     }
 
-    .mas-step:hover {
+    .maa-step:hover {
       background: var(--paper);
     }
 
-    .mas-step .n {
+    .maa-step .n {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1650,7 +1600,7 @@
       transition: background .18s, color .18s;
     }
 
-    .mas-step .t {
+    .maa-step .t {
       display: block;
       font-size: 13.5px;
       font-weight: 600;
@@ -1658,25 +1608,25 @@
       transition: color .18s;
     }
 
-    .mas-step[aria-selected="true"] {
+    .maa-step[aria-selected="true"] {
       border-bottom-color: var(--step-color, var(--blue));
     }
 
-    .mas-step[aria-selected="true"] .n {
+    .maa-step[aria-selected="true"] .n {
       background: var(--step-color, var(--blue));
       color: #fff;
     }
 
-    .mas-step[aria-selected="true"] .t {
+    .maa-step[aria-selected="true"] .t {
       color: var(--ink);
     }
 
-    .mas-panel {
+    .maa-panel {
       padding: clamp(22px, 3.4vw, 38px);
       display: none;
     }
 
-    .mas-panel.active {
+    .maa-panel.active {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 30px;
@@ -1685,7 +1635,7 @@
     }
 
     @media (max-width: 820px) {
-      .mas-panel.active {
+      .maa-panel.active {
         grid-template-columns: 1fr;
       }
     }
@@ -1758,13 +1708,13 @@
       letter-spacing: .05em;
     }
 
-    .mas-panel .desc {
+    .maa-panel .desc {
       font-size: 15.5px;
       color: var(--muted);
       line-height: 1.68;
     }
 
-    .mas-panel .desc b {
+    .maa-panel .desc b {
       color: var(--ink-soft);
     }
 
@@ -2729,28 +2679,6 @@
               depth-normal consistency, and TSDF fusion.</p>
           </div>
         </div>
-        <div class="scene-card reveal">
-          <div class="scene-thumb robot">
-            <div class="ph">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                stroke-linejoin="round">
-                <rect x="5" y="4" width="14" height="12" rx="3" />
-                <circle cx="9.5" cy="10" r="1.2" fill="currentColor" />
-                <circle cx="14.5" cy="10" r="1.2" fill="currentColor" />
-                <path d="M12 16v3" />
-                <path d="M8 22h8" />
-                <path d="M12 4V2" />
-              </svg>
-              <span>Preview coming soon</span>
-            </div>
-          </div>
-          <div class="scene-body">
-            <span class="src-tag src-r">R · Robot-captured</span>
-            <h3>Reconstructed from the robot's own walk</h3>
-            <p>Scenes built from onboard image streams via VI-SLAM, with IMU + Laplacian sharpness filtering to reject
-              gait-blurred frames — a scalable path to deployment-driven scene generation.</p>
-          </div>
-        </div>
       </div>
 
       <div class="navigable-note reveal">
@@ -2784,9 +2712,8 @@
           <div class="chart-head">
             <h4>Scenes by indoor class</h4>
           </div>
-          <div class="hbar-chart" id="class-chart" role="img"
-            aria-label="Horizontal bar chart of scene counts across 17 indoor classes grouped into 6 application domains: Residential (House, 49), Food and retail (Cafe 8, Supermarket 4, Restaurant 1, Store 1), Culture and leisure (Art exhibition 5, Library 4, Museum 2, Concert hall 1), Workplace and education (Office 2, Office pantry 2, Classroom 1, Conference room 1, Showroom 1, Studio 1), Healthcare (Hospital 2), Fitness (Gym 2).">
-          </div>
+          <svg id="class-chart" viewBox="0 0 520 320" role="img"
+            aria-label="Vertical bar chart of scene counts across 17 indoor classes grouped into 6 application domains: Residential (House, 49), Food and retail (Cafe 8, Supermarket 4, Restaurant 1, Store 1), Culture and leisure (Art exhibition 5, Library 4, Museum 2, Concert hall 1), Workplace and education (Office 2, Office pantry 2, Classroom 1, Conference room 1, Showroom 1, Studio 1), Healthcare (Hospital 2), Fitness (Gym 2)."></svg>
           <div class="chart-legend chart-legend-wrap">
             <span class="lg-item"><i class="lg-swatch" style="background:var(--blue)"></i>Residential</span>
             <span class="lg-item"><i class="lg-swatch" style="background:var(--amber)"></i>Food &amp; retail</span>
@@ -2803,7 +2730,7 @@
     </div>
   </section>
 
-  <!-- ============ Instructions / MAS ============ -->
+  <!-- ============ Instructions / MAA ============ -->
   <section id="instructions">
     <div class="wrap">
       <div class="sec-eyebrow reveal">Instruction Generation</div>
@@ -2813,32 +2740,32 @@
         synthesis — then a human takes the final pass.</p>
 
       <figure class="figure reveal">
-        <img src="images/mas_overall_pipeline.png"
+        <img src="images/maa.webp"
           alt="Pipeline diagram: egocentric navigation video and 2D occupancy map feed a Dual Generator-Reviewer plus Paraphraser multi-agent system, producing structured JSON with fine-grained and coarse-grained instructions."
           data-lightbox>
-        <figcaption><b>Generation pipeline.</b> Egocentric video and a 2D occupancy map enter the MAS; structured JSON
+        <figcaption><b>Generation pipeline.</b> Egocentric video and a 2D occupancy map enter the MAA; structured JSON
           with fine- and coarse-grained instructions comes out. The Paraphraser is constrained to preserve action order
           and landmark order. <em>Click to enlarge.</em></figcaption>
       </figure>
 
       <!-- Interactive stepper -->
-      <div class="mas-demo reveal">
-        <div class="mas-steps" role="tablist" aria-label="Multi-agent pipeline steps">
-          <button class="mas-step" role="tab" data-step="0" aria-selected="true" style="--step-color: var(--amber)">
+      <div class="maa-demo reveal">
+        <div class="maa-steps" role="tablist" aria-label="Multi-agent pipeline steps">
+          <button class="maa-step" role="tab" data-step="0" aria-selected="true" style="--step-color: var(--amber)">
             <span class="n">1</span><span class="t">Generator drafts</span>
           </button>
-          <button class="mas-step" role="tab" data-step="1" aria-selected="false" style="--step-color: var(--blue)">
+          <button class="maa-step" role="tab" data-step="1" aria-selected="false" style="--step-color: var(--blue)">
             <span class="n">2</span><span class="t">Reviewer critiques</span>
           </button>
-          <button class="mas-step" role="tab" data-step="2" aria-selected="false" style="--step-color: var(--green)">
+          <button class="maa-step" role="tab" data-step="2" aria-selected="false" style="--step-color: var(--green)">
             <span class="n">3</span><span class="t">Paraphraser styles</span>
           </button>
-          <button class="mas-step" role="tab" data-step="3" aria-selected="false" style="--step-color: var(--violet)">
+          <button class="maa-step" role="tab" data-step="3" aria-selected="false" style="--step-color: var(--violet)">
             <span class="n">4</span><span class="t">Human verifies</span>
           </button>
         </div>
 
-        <div class="mas-panel active" data-panel="0">
+        <div class="maa-panel active" data-panel="0">
           <div>
             <div class="agent-head">
               <div class="agent-avatar av-gen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2862,7 +2789,7 @@
           </div>
         </div>
 
-        <div class="mas-panel" data-panel="1">
+        <div class="maa-panel" data-panel="1">
           <div>
             <div class="agent-head">
               <div class="agent-avatar av-rev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2888,7 +2815,7 @@
           </div>
         </div>
 
-        <div class="mas-panel" data-panel="2">
+        <div class="maa-panel" data-panel="2">
           <div>
             <div class="agent-head">
               <div class="agent-avatar av-par"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2911,7 +2838,7 @@
           </div>
         </div>
 
-        <div class="mas-panel" data-panel="3">
+        <div class="maa-panel" data-panel="3">
           <div>
             <div class="agent-head">
               <div class="agent-avatar av-hum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -3085,8 +3012,8 @@
               <td>Isaac (Humanoid)</td>
               <td class="yes">✓</td>
               <td>10–12</td>
-              <td><span class="pill hl">A + GS + R</span></td>
-              <td><span class="pill hl">MAS + Human</span></td>
+              <td><span class="pill hl">A + GS</span></td>
+              <td><span class="pill hl">MAA + Human</span></td>
               <td>Hybrid</td>
             </tr>
           </tbody>
@@ -3094,7 +3021,7 @@
       </div>
       <p class="table-note reveal"><b>Scene source</b> — A: artist-designed · GS: 3D Gaussian Splatting reconstruction ·
         R: robot-captured reconstruction. &nbsp;<b>Instruction</b> — Human: manual annotation · VLM: automated
-        generation · MAS + Human: Dual Generator-Reviewer + Paraphraser multi-agent system with human-in-the-loop
+        generation · MAA + Human: Dual Generator-Reviewer + Paraphraser multi-agent system with human-in-the-loop
         verification.</p>
 
       <div style="height: 44px"></div>
@@ -3150,7 +3077,7 @@
   </section>
 
   <!-- ============ Videos ============ -->
-  <section id="videos">
+  <!-- <section id="videos">
     <div class="wrap-wide">
       <div class="sec-eyebrow reveal">Demonstrations</div>
       <h2 class="sec-title reveal">See it walk</h2>
@@ -3228,10 +3155,11 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- ============ BibTeX ============ -->
-  <section id="bibtex">
+  <!-- temporally disable BibTeX -->
+  <!-- <section id="bibtex">
     <div class="wrap">
       <div class="sec-eyebrow reveal">Citation</div>
       <h2 class="sec-title reveal">BibTeX</h2>
@@ -3246,7 +3174,7 @@
 }</pre>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <footer>
     <div class="wrap-wide foot-inner">
@@ -3430,25 +3358,25 @@
       tabs.forEach(t => t.addEventListener('click', () => selectRobot(t.dataset.robot)));
       selectRobot('A');
 
-      /* ---- MAS stepper ---- */
-      const steps = document.querySelectorAll('.mas-step');
-      const panels = document.querySelectorAll('.mas-panel');
-      let masTimer = null, masIdx = 0, masInteracted = false;
+      /* ---- MAA stepper ---- */
+      const steps = document.querySelectorAll('.maa-step');
+      const panels = document.querySelectorAll('.maa-panel');
+      let maaTimer = null, maaIdx = 0, maaInteracted = false;
       function showStep(i) {
-        masIdx = i;
+        maaIdx = i;
         steps.forEach((s, j) => s.setAttribute('aria-selected', String(i === j)));
         panels.forEach((p, j) => p.classList.toggle('active', i === j));
       }
-      steps.forEach((s, i) => s.addEventListener('click', () => { masInteracted = true; clearInterval(masTimer); showStep(i); }));
+      steps.forEach((s, i) => s.addEventListener('click', () => { maaInteracted = true; clearInterval(maaTimer); showStep(i); }));
       if (!reduceMotion && 'IntersectionObserver' in window) {
         const mio = new IntersectionObserver((entries) => {
           entries.forEach(e => {
-            if (e.isIntersecting && !masInteracted && !masTimer) {
-              masTimer = setInterval(() => showStep((masIdx + 1) % steps.length), 5000);
+            if (e.isIntersecting && !maaInteracted && !maaTimer) {
+              maaTimer = setInterval(() => showStep((maaIdx + 1) % steps.length), 5000);
             }
           });
         }, { threshold: 0.4 });
-        mio.observe(document.querySelector('.mas-demo'));
+        mio.observe(document.querySelector('.maa-demo'));
       }
 
       /* ---- Taxonomy tabs ---- */
@@ -3568,27 +3496,62 @@
         });
       }
 
-      const classChartEl = document.getElementById('class-chart');
-      if (classChartEl) {
+      const classSvg = document.getElementById('class-chart');
+      if (classSvg) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const W = 520, H = 320;
+        const marginL = 28, marginR = 6, marginT = 10, marginB = 92;
+        const plotW = W - marginL - marginR;
+        const plotH = H - marginT - marginB;
         const maxCount = Math.max(...sceneClassData.map(d => d.count));
-        sceneClassData.forEach(d => {
-          const row = document.createElement('div');
-          row.className = 'hbar-row';
-          row.tabIndex = 0;
-          const pct = Math.max(4, (d.count / maxCount) * 100);
+        const niceMax = Math.ceil(maxCount / 10) * 10;
+        const baseY = marginT + plotH;
+        const yOf = v => marginT + plotH - (v / niceMax) * plotH;
+
+        function makeEl(tag, attrs) {
+          const el = document.createElementNS(svgNS, tag);
+          for (const k in attrs) el.setAttribute(k, attrs[k]);
+          return el;
+        }
+
+        for (let t = 0; t <= niceMax; t += 10) {
+          classSvg.appendChild(makeEl('line', { x1: marginL, x2: W - marginR, y1: yOf(t), y2: yOf(t), class: 'chart-gridline' }));
+          const lbl = makeEl('text', { x: marginL - 6, y: yOf(t) + 3, 'text-anchor': 'end', class: 'chart-tick-label' });
+          lbl.textContent = t;
+          classSvg.appendChild(lbl);
+        }
+        classSvg.appendChild(makeEl('line', { x1: marginL, x2: W - marginR, y1: baseY, y2: baseY, class: 'chart-axis-line' }));
+
+        const n = sceneClassData.length;
+        const slot = plotW / n;
+        const barW = Math.max(4, slot * 0.66);
+        sceneClassData.forEach((d, i) => {
+          const bx = marginL + i * slot + (slot - barW) / 2;
+          const by = yOf(d.count);
           const colorVar = domainColorVar[d.domain];
-          row.innerHTML = `<span class="hbar-label">${d.cls}</span><span class="hbar-track"><span class="hbar-fill" style="width:${pct}%;background:var(${colorVar})"></span></span><span class="hbar-count">${d.count}</span>`;
+          const rect = makeEl('rect', {
+            x: bx.toFixed(2), y: by.toFixed(2), width: barW.toFixed(2), height: (baseY - by).toFixed(2),
+            class: 'class-bar', style: `fill:var(${colorVar})`, tabindex: '0'
+          });
           const label = `${d.cls}: ${d.count} scene${d.count > 1 ? 's' : ''} · ${domainLabel[d.domain]}`;
-          row.setAttribute('aria-label', label);
-          row.addEventListener('mouseenter', e => showChartTooltip(e.clientX, e.clientY, label));
-          row.addEventListener('mousemove', e => showChartTooltip(e.clientX, e.clientY, label));
-          row.addEventListener('mouseleave', hideChartTooltip);
-          row.addEventListener('focus', () => {
-            const r = row.getBoundingClientRect();
+          rect.setAttribute('aria-label', label);
+          rect.addEventListener('mouseenter', e => showChartTooltip(e.clientX, e.clientY, label));
+          rect.addEventListener('mousemove', e => showChartTooltip(e.clientX, e.clientY, label));
+          rect.addEventListener('mouseleave', hideChartTooltip);
+          rect.addEventListener('focus', () => {
+            const r = rect.getBoundingClientRect();
             showChartTooltip(r.left + r.width / 2, r.top, label);
           });
-          row.addEventListener('blur', hideChartTooltip);
-          classChartEl.appendChild(row);
+          rect.addEventListener('blur', hideChartTooltip);
+          classSvg.appendChild(rect);
+
+          const cx = bx + barW / 2;
+          const tickLbl = makeEl('text', {
+            x: cx.toFixed(2), y: baseY + 8, 'text-anchor': 'end', class: 'chart-tick-label',
+            transform: `rotate(-50 ${cx.toFixed(2)} ${baseY + 8})`
+          });
+          tickLbl.textContent = d.cls;
+          classSvg.appendChild(tickLbl);
         });
       }
 
