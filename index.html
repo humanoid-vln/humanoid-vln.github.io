@@ -1398,11 +1398,11 @@
     /* ============ Scene cards ============ */
     .scene-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 760px) {
       .scene-grid {
         grid-template-columns: 1fr;
       }
@@ -1473,6 +1473,94 @@
       letter-spacing: .12em;
       text-transform: uppercase;
       opacity: .75;
+    }
+
+    /* ---- Before/after comparison slider ---- */
+    .compare-slider {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      --pos: 50%;
+      cursor: ew-resize;
+      touch-action: none;
+    }
+
+    .compare-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .compare-img.compare-after {
+      clip-path: inset(0 0 0 var(--pos));
+    }
+
+    .compare-handle {
+      position: absolute;
+      inset: 0 auto 0 var(--pos);
+      width: 2px;
+      background: rgba(255, 255, 255, .85);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+      pointer-events: none;
+    }
+
+    .compare-handle-grip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #fff;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1B2438;
+    }
+
+    .compare-handle-grip svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .compare-label {
+      position: absolute;
+      bottom: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(10, 14, 26, .55);
+      color: #fff;
+      pointer-events: none;
+    }
+
+    .compare-label-before {
+      left: 10px;
+    }
+
+    .compare-label-after {
+      right: 10px;
+    }
+
+    .compare-range {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     .scene-body {
@@ -2631,24 +2719,30 @@
     <div class="wrap">
       <div class="sec-eyebrow reveal">Scene Suite</div>
       <h2 class="sec-title reveal">Environments curated for bipedal traversal</h2>
-      <p class="sec-lede reveal">Three complementary scene sources, one admission criterion: a humanoid must actually be
+      <p class="sec-lede reveal">Two complementary scene sources, one admission criterion: a humanoid must actually be
         able to walk there.</p>
 
       <div class="scene-grid">
         <div class="scene-card reveal">
           <div class="scene-thumb artist">
-            <div class="ph">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M3 21h18" />
-                <path d="M5 21V7l8-4v18" />
-                <path d="M19 21V11l-6-4" />
-                <path d="M9 9v.01" />
-                <path d="M9 12v.01" />
-                <path d="M9 15v.01" />
-                <path d="M9 18v.01" />
-              </svg>
-              <span>Preview coming soon</span>
+            <div class="compare-slider">
+              <img class="compare-img compare-before" src="images/grs_rgb.png" alt="RGB render of a GRScenes bedroom"
+                loading="lazy" decoding="async">
+              <img class="compare-img compare-after" src="images/grs_rec.png"
+                alt="Surface normal map of the same GRScenes bedroom" loading="lazy" decoding="async">
+              <div class="compare-label compare-label-before">RGB render</div>
+              <div class="compare-label compare-label-after">Normal map</div>
+              <div class="compare-handle" aria-hidden="true">
+                <div class="compare-handle-grip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="14 6 8 12 14 18" />
+                    <polyline points="10 6 16 12 10 18" />
+                  </svg>
+                </div>
+              </div>
+              <input type="range" class="compare-range" min="0" max="100" value="50"
+                aria-label="Slide to compare RGB render against surface normal map">
             </div>
           </div>
           <div class="scene-body">
@@ -2660,21 +2754,29 @@
         </div>
         <div class="scene-card reveal">
           <div class="scene-thumb gs">
-            <div class="ph">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                stroke-linejoin="round">
-                <circle cx="6" cy="7" r="2.4" />
-                <circle cx="17" cy="5.5" r="1.8" />
-                <circle cx="12" cy="12" r="3" />
-                <circle cx="5.5" cy="17" r="1.8" />
-                <circle cx="18" cy="16.5" r="2.4" />
-              </svg>
-              <span>Preview coming soon</span>
+            <div class="compare-slider">
+              <img class="compare-img compare-before" src="images/gs2sim_rgb.png" alt="RGB capture of the scene"
+                loading="lazy" decoding="async">
+              <img class="compare-img compare-after" src="images/gs2sim_rec.png"
+                alt="3D Gaussian Splatting reconstruction of the same scene" loading="lazy" decoding="async">
+              <div class="compare-label compare-label-before">RGB capture</div>
+              <div class="compare-label compare-label-after">GS reconstruction</div>
+              <div class="compare-handle" aria-hidden="true">
+                <div class="compare-handle-grip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="14 6 8 12 14 18" />
+                    <polyline points="10 6 16 12 10 18" />
+                  </svg>
+                </div>
+              </div>
+              <input type="range" class="compare-range" min="0" max="100" value="50"
+                aria-label="Slide to compare RGB capture against Gaussian Splatting reconstruction">
             </div>
           </div>
           <div class="scene-body">
             <span class="src-tag src-gs">GS · Gaussian Splatting</span>
-            <h3>SAGE-3D + custom gsplat pipeline</h3>
+            <h3>GS2Sim: Our custom GSSPlat pipeline</h3>
             <p>Photorealistic 3DGS reconstructions with collision meshes extracted via unbiased depth rendering,
               depth-normal consistency, and TSDF fusion.</p>
           </div>
@@ -3019,10 +3121,9 @@
           </tbody>
         </table>
       </div>
-      <p class="table-note reveal"><b>Scene source</b> — A: artist-designed · GS: 3D Gaussian Splatting reconstruction ·
-        R: robot-captured reconstruction. &nbsp;<b>Instruction</b> — Human: manual annotation · VLM: automated
-        generation · MAA + Human: Dual Generator-Reviewer + Paraphraser multi-agent system with human-in-the-loop
-        verification.</p>
+      <p class="table-note reveal"><b>Scene source</b> — A: artist-designed · GS: 3D Gaussian Splatting reconstruction
+        &nbsp;<b>Instruction</b> — Human: manual annotation · VLM: automated generation · MAA + Human: Dual
+        Generator-Reviewer + Paraphraser multi-agent annotation with human-in-the-loop verification.</p>
 
       <div style="height: 44px"></div>
 
@@ -3205,6 +3306,35 @@
       } else {
         revealEls.forEach(el => el.classList.add('visible'));
       }
+
+      /* ---- Before/after comparison sliders ---- */
+      document.querySelectorAll('.compare-slider').forEach((slider) => {
+        const range = slider.querySelector('.compare-range');
+        if (!range) return;
+        const setPos = (pct) => {
+          range.value = pct;
+          slider.style.setProperty('--pos', pct + '%');
+        };
+        const pctFromEvent = (e) => {
+          const rect = slider.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          return Math.min(100, Math.max(0, (x / rect.width) * 100));
+        };
+        let dragging = false;
+        slider.addEventListener('pointerdown', (e) => {
+          dragging = true;
+          slider.setPointerCapture(e.pointerId);
+          setPos(pctFromEvent(e));
+        });
+        slider.addEventListener('pointermove', (e) => {
+          if (dragging) setPos(pctFromEvent(e));
+        });
+        const stopDrag = () => { dragging = false; };
+        slider.addEventListener('pointerup', stopDrag);
+        slider.addEventListener('pointercancel', stopDrag);
+        range.addEventListener('input', () => setPos(range.value));
+        setPos(range.value);
+      });
 
       /* ---- Scrollspy ---- */
       const navLinks = document.querySelectorAll('.nav-links a');
