@@ -5,11 +5,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description"
-    content="HumanoidVLN: a physics-grounded simulator and benchmark for vision-language navigation across diverse humanoid embodiments. Humanoids 2026.">
+    content="HumanoidVLN: a physics-grounded simulator and benchmark for vision-language navigation across diverse humanoid embodiments. 933 episodes across 87 scenes and four humanoid embodiments.">
   <meta property="og:title" content="HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots">
   <meta property="og:description"
     content="An Isaac Sim platform, navigability-curated scenes, and a multi-agent instruction pipeline for humanoid vision-language navigation.">
-  <meta property="og:image" content="images/platform.png">
+  <meta property="og:image" content="images/humanoidvln-overview.jpg">
   <title>HumanoidVLN — Physics-Grounded VLN Benchmark for Humanoid Robots</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
@@ -2408,13 +2408,13 @@
   <!-- ============ Hero ============ -->
   <header class="hero" id="top">
     <div class="wrap-wide">
-      <div class="hero-eyebrow"><span class="dot"></span>Humanoids 2026 &middot; Under Review</div>
+      <div class="hero-eyebrow"><span class="dot"></span>Physics-grounded humanoid navigation</div>
       <h1 class="title">HumanoidVLN: a physics-grounded simulator &amp; benchmark for <span
           class="accent">vision-language navigation</span> across diverse humanoid embodiments</h1>
-      <p class="subtitle">Language in, stable bipedal walking out — evaluated under real physics, not teleportation.</p>
+      <p class="subtitle">933 collision-aware episodes · 87 indoor scenes · Four humanoid embodiments</p>
 
-      <p class="authors">Anonymous Authors</p>
-      <p class="affil">Anonymous Institution &nbsp;·&nbsp; Under double-blind review</p>
+      <p class="authors">Quan-Dung Pham<sup>1,*</sup>, Anh Dao<sup>1,*</sup>, The-Anh Nguyen<sup>1,*</sup>, Minh Nguyen-Dinh<sup>1,*</sup>, Phuong Nam Dang<sup>1,*</sup>, Nguyen Viet Tri Pham<sup>1</sup>, Hung Nguyen<sup>1</sup>, Bach Dao<sup>1</sup>, Tuyen P. Le<sup>1</sup>, Truong Nguyen<sup>1,2</sup>, Quan Nguyen<sup>3</sup></p>
+      <p class="affil"><sup>1</sup> VinMotion, Inc., Vietnam &nbsp;·&nbsp; <sup>2</sup> VinUniversity, Vietnam &nbsp;·&nbsp; <sup>3</sup> University of Southern California, USA<br><sup>*</sup> Equal contribution</p>
 
       <div class="cta-row">
         <a class="btn btn-primary" href="#" aria-disabled="true">
@@ -2434,7 +2434,7 @@
             stroke-linejoin="round">
             <polygon points="6 3 20 12 6 21 6 3" />
           </svg>
-          Video<span class="soon">soon</span>
+          Video
         </a>
         <a class="btn btn-ghost" href="#" aria-disabled="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -2455,10 +2455,10 @@
       </div>
 
       <!-- Signature: simulator viewport -->
-      <div class="viewport reveal">
+      <div class="viewport reveal" id="videos">
         <div class="viewport-chrome">
           <span class="rec">Ego-cam &middot; recording</span>
-          <span>Isaac Sim &middot; Internal-A &middot; 12 DoF &middot; 1.61 m</span>
+          <span>Isaac Sim &middot; Motion2 &middot; 12 DoF &middot; 1.61 m</span>
         </div>
         <div class="viewport-body">
           <div class="gridmap" role="img"
@@ -2576,17 +2576,7 @@
         three gaps at once.</p>
 
       <div class="abstract-card reveal">
-        <p>Vision-language navigation (VLN) has largely been studied on abstracted mobile agents, leaving a wide
-          sim-to-real gap for humanoid robots, whose gait stability, joint limits, and center-of-mass dynamics
-          fundamentally change what a feasible trajectory is. <b>HumanoidVLN</b> is a physics-grounded simulator and
-          benchmark built on NVIDIA Isaac Sim that evaluates VLN under authentic bipedal embodiment.</p>
-        <p>The platform supports four humanoid configurations spanning 10–12 lower-body DoF and 1.20–1.80&nbsp;m in
-          height, each driven by a hierarchical control stack: an RL policy generates stable low-level gaits while PD or
-          MPC trackers follow global plans. Scenes are curated from artist-designed environments, 3D Gaussian Splatting
-          reconstructions, and robot-captured image streams — all with more than 100&nbsp;m² of navigable area.
-          Navigation instructions are produced by a <b>Dual Generator-Reviewer + Paraphraser</b> multi-agent system with
-          human-in-the-loop verification, yielding annotations that are scalable, linguistically diverse, and physically
-          consistent with the executed trajectories.</p>
+        <p>Vision-Language Navigation (VLN) for humanoid robots presents unique challenges that existing benchmarks fail to address: bipedal locomotion imposes physical constraints absent from wheeled or idealized agents, humanoid morphologies vary significantly across platforms, and egocentric observations are distorted by locomotion-induced camera dynamics. We present HumanoidVLN, a physics-grounded simulator and benchmark for VLN across diverse humanoid embodiments. Built on NVIDIA Isaac Sim, our platform supports an extensible set of humanoid configurations — demonstrated on four robots (Unitree G1, Unitree H1, Motion2, MiniMotion) spanning 10–12 lower-body DoF and heights from 1.17 m to 1.80 m — via a hierarchical control stack combining a Reinforcement Learning locomotion policy with interchangeable PD or MPC path trackers. New robots and VLN models can be integrated with minimal effort, and we demonstrate compatibility with NaVILA, DualVLN, StreamVLN, and JanusVLN. Environments are drawn from artist-designed scenes and 3D Gaussian Splatting reconstructions, filtered for navigability areas exceeding 100 m². Navigation instructions are generated by a Dual Generator-Reviewer + Paraphraser Multi-Agent Annotation with human-in-the-loop verification, yielding 933 collision-aware reference episodes, each paired with one spatially grounded fine-grained instruction and three coarse-grained stylistic variants (Formal, Natural, Casual). Across four models and four humanoid embodiments, JanusVLN achieves the highest mean SR of 43.55% and nDTW of 48.38. In a 20-episode sim–real pilot with DualVLN and Unitree G1, navigation errors are strongly correlated (r = 0.935), with a mean absolute difference of 0.68m and mean trajectory similarity of 0.782 ± 0.188 nDTW. These results highlight the interaction between VLN models, controllers, and humanoid embodiments under physical execution. Code, benchmark, and data will be released upon acceptance.</p>
       </div>
 
       <div style="height: 40px"></div>
@@ -2632,7 +2622,7 @@
         performance can be compared across morphologies under controlled conditions.</p>
 
       <figure class="figure reveal">
-        <img src="images/platform.png"
+        <img src="images/humanoidvln-overview.jpg"
           alt="Overview diagram of the humanoid VLN simulation platform: a multi-humanoid library, hierarchical control framework, Isaac Sim environment, dataset generation, and VLN evaluation interface."
           data-lightbox>
         <figcaption><b>Platform overview.</b> Overview of the HumanoidVLN physics-grounded benchmark pipeline, from
@@ -2652,10 +2642,10 @@
           <button class="robot-tab" role="tab" data-robot="B" aria-selected="false">Unitree H1 <span class="meta">10 DoF
               ·
               1.80 m</span></button>
-          <button class="robot-tab" role="tab" data-robot="C" aria-selected="false">Internal-A <span class="meta">12 DoF
+          <button class="robot-tab" role="tab" data-robot="C" aria-selected="false">Motion2 <span class="meta">12 DoF
               ·
               1.61 m</span></button>
-          <button class="robot-tab" role="tab" data-robot="D" aria-selected="false">Internal-B <span class="meta">12 DoF
+          <button class="robot-tab" role="tab" data-robot="D" aria-selected="false">MiniMotion <span class="meta">12 DoF
               ·
               1.17 m</span></button>
         </div>
@@ -2685,8 +2675,7 @@
         <div class="stack-node">
           <div class="lvl">High level · Global</div>
           <h4>PD / MPC path tracker</h4>
-          <p>Converts the global navigation plan into velocity and heading references. Both tracker variants are
-            interchangeable, so tracker fidelity itself becomes an experimental variable.</p>
+          <p>Converts the global navigation plan into velocity and heading references. MPC is used for continuous-action DualVLN; PD is used for discrete-action NaVILA, StreamVLN, and JanusVLN.</p>
         </div>
         <div class="stack-arrow" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2832,6 +2821,16 @@
     </div>
   </section>
 
+  <section aria-label="Reconstruction quality">
+    <div class="wrap">
+      <h2 class="sec-title reveal">Geometry suitable for physical simulation</h2>
+      <figure class="figure reveal">
+        <img src="images/reconstruction-ablation.jpg" alt="Surface-normal comparison for two indoor scenes: vanilla gsplat, depth-normal consistency, and the full pipeline with unbiased depth." loading="lazy" data-lightbox>
+        <figcaption><b>Qualitative reconstruction ablation.</b> Depth-normal consistency and unbiased depth yield smoother, more coherent geometry for TSDF fusion and collision meshes in Isaac Sim.</figcaption>
+      </figure>
+    </div>
+  </section>
+
   <!-- ============ Instructions / MAA ============ -->
   <section id="instructions">
     <div class="wrap">
@@ -2842,7 +2841,7 @@
         synthesis — then a human takes the final pass.</p>
 
       <figure class="figure reveal">
-        <img src="images/maa.webp"
+        <img src="images/maa-dual-generators.jpg"
           alt="Pipeline diagram: egocentric navigation video and 2D occupancy map feed a Dual Generator-Reviewer plus Paraphraser multi-agent system, producing structured JSON with fine-grained and coarse-grained instructions."
           data-lightbox>
         <figcaption><b>Generation pipeline.</b> Egocentric video and a 2D occupancy map enter the MAA; structured JSON
@@ -2850,6 +2849,7 @@
           and landmark order. <em>Click to enlarge.</em></figcaption>
       </figure>
 
+      <p class="table-note">The interactive conversation and instruction variants below are illustrative examples, not quoted dataset annotations.</p>
       <!-- Interactive stepper -->
       <div class="maa-demo reveal">
         <div class="maa-steps" role="tablist" aria-label="Multi-agent pipeline steps">
@@ -2880,9 +2880,7 @@
                 <div class="role">Visual-linguistic bridge · Chain-of-Thought</div>
               </div>
             </div>
-            <p class="desc">Takes the chronological egocentric frames and spatial prior, performs <b>route
-                understanding</b> (turn and transition detection) and <b>landmark mining</b>, and drafts a step-by-step
-              instruction in second-person imperative voice.</p>
+            <p class="desc">Gemma-4-31B-it and InternVL3.5-38B independently infer structured route graphs from egocentric keyframes alone, sharing a goal condition grounded by Qwen3-VL-30B-A3B. The graphs encode actions, landmarks, side-of-path relations, ordinals, and turn magnitudes.</p>
           </div>
           <div>
             <div class="msg msg-gen"><span class="from">Generator · Draft 1</span>"Go straight down the hallway, turn
@@ -2904,9 +2902,7 @@
                 <div class="role">Logic-driven critic · scene-graph grounded</div>
               </div>
             </div>
-            <p class="desc">Cross-checks the draft against a rigid <b>spatial-semantic scene graph</b> from simulator
-              metadata and the observed <b>trajectory data</b>. Physically implausible relations trigger a correction,
-              and the loop repeats until the text is spatially and temporally consistent.</p>
+            <p class="desc">Reconciles the two route graphs and verifies contradictions using Qwen3-VL-30B-A3B, trajectory metadata, the A* route, and a spatial–semantic scene graph restricted to visible objects. Deterministic geometry checks validate turns, order, landmark identity, and spatial relations; the VLM checks completeness and ambiguity.</p>
           </div>
           <div>
             <div class="msg msg-rev"><span class="from">Reviewer · Critique</span>Trajectory heading changes by −87° at
@@ -2930,8 +2926,7 @@
                 <div class="role">Stylistic adaptation · order-preserving</div>
               </div>
             </div>
-            <p class="desc">Rewrites the verified instruction into diverse linguistic styles — <b>formal, natural,
-                casual</b> — without altering the grounding facts. Action order and landmark order are hard constraints.
+            <p class="desc">GPT-5.5 receives only the verified text and produces <b>Formal, Natural, and Casual</b> variants at T = 1.0. Each variant is re-parsed and accepted only when its navigation-critical attributes match the verified route.
             </p>
           </div>
           <div>
@@ -2953,11 +2948,10 @@
                 <div class="role">Final verification pass</div>
               </div>
             </div>
-            <p class="desc">Human annotators correct residual errors and flag edge cases — the scalability of automation
-              with the reliability of manual annotation, <b>without its full cost</b>.</p>
+            <p class="desc">Three trained annotators review every generated instruction, correct residual errors, and flag ambiguous or infeasible cases for revision.</p>
           </div>
           <div>
-            <div class="msg msg-hum"><span class="from">Annotator · Approved</span>Episode 0413 ✓ — instruction
+            <div class="msg msg-hum"><span class="from">Annotator · Approved</span>Illustrative episode ✓ — instruction
               grounded, landmarks consistent, endpoint condition explicit. Packaged to JSON.</div>
           </div>
         </div>
@@ -3127,12 +3121,37 @@
 
       <div style="height: 44px"></div>
 
+      <h2 class="sec-title reveal">Zero-shot cross-embodiment results</h2>
+      <p class="sec-lede reveal">All four public checkpoints are evaluated without training or fine-tuning on the same 933 episodes. One instruction per episode is assigned in a fixed, approximately balanced distribution across Fine, Formal, Natural, and Casual styles, shared by every model–robot configuration.</p>
+      <div class="table-scroll reveal"><table class="cmp">
+        <caption>Results on 933 episodes per configuration. SR, OS, SPL, nDTW and FR are reported on a 0–100 scale; NE is in meters.</caption>
+        <thead><tr><th scope="col">Model</th><th scope="col">Robot</th><th scope="col">SR ↑</th><th scope="col">OS ↑</th><th scope="col">NE ↓</th><th scope="col">SPL ↑</th><th scope="col">nDTW ↑</th><th scope="col">FR ↓</th></tr></thead>
+        <tbody><tr><td class="ds">NaVILA</td><td>Unitree G1</td><td>28.19</td><td>41.80</td><td>5.86</td><td>22.24</td><td>43.65</td><td>7.93</td></tr>
+<tr><td class="ds">NaVILA</td><td>Unitree H1</td><td>21.97</td><td>37.41</td><td>6.14</td><td>17.12</td><td>41.97</td><td>70.95</td></tr>
+<tr><td class="ds">NaVILA</td><td>Motion2</td><td>31.73</td><td>56.27</td><td>5.54</td><td>15.81</td><td>31.99</td><td>2.68</td></tr>
+<tr><td class="ds">NaVILA</td><td>MiniMotion</td><td>26.80</td><td>42.77</td><td>5.94</td><td>21.00</td><td>37.93</td><td>6.97</td></tr>
+<tr><td class="ds">StreamVLN</td><td>Unitree G1</td><td>26.80</td><td>34.30</td><td>6.35</td><td>19.50</td><td>41.38</td><td>9.54</td></tr>
+<tr><td class="ds">StreamVLN</td><td>Unitree H1</td><td>14.36</td><td>20.58</td><td>7.32</td><td>11.17</td><td>35.45</td><td>64.52</td></tr>
+<tr><td class="ds">StreamVLN</td><td>Motion2</td><td>31.83</td><td>40.41</td><td>6.07</td><td>19.51</td><td>39.72</td><td>2.68</td></tr>
+<tr><td class="ds">StreamVLN</td><td>MiniMotion</td><td>21.54</td><td>29.80</td><td>7.13</td><td>11.63</td><td>30.15</td><td>7.93</td></tr>
+<tr><td class="ds">DualVLN</td><td>Unitree G1</td><td>35.05</td><td>42.55</td><td>5.73</td><td>25.83</td><td>46.67</td><td>5.47</td></tr>
+<tr><td class="ds">DualVLN</td><td>Unitree H1</td><td>17.68</td><td>22.19</td><td>6.80</td><td>14.70</td><td>39.17</td><td>27.12</td></tr>
+<tr><td class="ds">DualVLN</td><td>Motion2</td><td>32.69</td><td>41.37</td><td>5.70</td><td>21.86</td><td>43.27</td><td>3.64</td></tr>
+<tr><td class="ds">DualVLN</td><td>MiniMotion</td><td>30.23</td><td>40.51</td><td>5.93</td><td>23.29</td><td>44.44</td><td>7.07</td></tr>
+<tr><td class="ds">JanusVLN</td><td>Unitree G1</td><td>44.59</td><td>55.31</td><td>4.87</td><td>33.18</td><td>50.08</td><td>7.40</td></tr>
+<tr><td class="ds">JanusVLN</td><td>Unitree H1</td><td>29.37</td><td>38.48</td><td>5.80</td><td>23.24</td><td>44.93</td><td>30.76</td></tr>
+<tr><td class="ds">JanusVLN</td><td>Motion2</td><td>50.38</td><td>63.34</td><td>4.26</td><td>33.56</td><td>50.51</td><td>2.79</td></tr>
+<tr><td class="ds">JanusVLN</td><td>MiniMotion</td><td>49.84</td><td>64.31</td><td>4.54</td><td>36.18</td><td>48.01</td><td>9.97</td></tr></tbody>
+      </table></div>
+      <p class="table-note reveal">JanusVLN achieves the highest mean SR (43.55%) and nDTW (48.38). Motion2 has the highest average SR (36.66%); G1 has the highest average SPL (25.19). H1 fall rates range from 27.12% to 70.95%, highlighting the interaction between models, controllers, and embodiments.</p>
+      <h2 class="sec-title reveal">Sim-to-real pilot</h2>
+      <p class="sec-lede reveal">DualVLN on Unitree G1 was evaluated on 20 paired episodes in a pantry and a studio room (10 per scene). Simulation and real-world navigation errors correlate strongly: Pearson r = 0.935 and Spearman ρ = 0.911. The mean absolute NE difference is 0.68 m; paired trajectory similarity is 0.782 ± 0.188 nDTW on a 0–1 scale. This two-scene, one-checkpoint pilot provides initial episode-level evidence, without establishing generalization across scenes.</p>
       <h2 class="sec-title reveal" style="font-size: clamp(21px, 2.6vw, 27px);">Evaluation protocol</h2>
       <div class="metric-grid">
         <div class="metric reveal">
           <div class="abbr">SR</div>
           <h4>Success Rate</h4>
-          <p>Share of episodes where the agent stops within a threshold distance of the target.</p>
+          <p>Share of episodes where the agent stops within 3.0 m of the goal.</p>
         </div>
         <div class="metric reveal">
           <div class="abbr">NE</div>
@@ -3158,8 +3177,7 @@
         <div class="metric reveal">
           <div class="abbr">FR</div>
           <h4>Fall Rate</h4>
-          <p>The fraction of steps in which the robot is detected to have fallen, measuring locomotion stability under
-            physical execution.</p>
+          <p>Percentage of episodes with at least one detected fall. Detection uses embodiment-relative base-height drops and downward speed or sustained collapse; a fall ends the episode without automatic recovery.</p>
         </div>
       </div>
 
@@ -3167,7 +3185,7 @@
         <span style="font-size: 14px; color: var(--muted); align-self: center; margin-right: 4px;">Plug-and-play VLN
           models:</span>
         <!-- <span class="model-chip">UniNAVID</span> -->
-        <span class="model-chip"><a href="https://github.com/AnjieCheng/NaVILA" target="_blank">NAVILA</a></span>
+        <span class="model-chip"><a href="https://github.com/AnjieCheng/NaVILA" target="_blank">NaVILA</a></span>
         <span class="model-chip"><a href="https://internrobotics.github.io/internvla-n1-dualvln.github.io/"
             target="_blank">DualVLN</a></span>
         <span class="model-chip"><a href="https://github.com/InternRobotics/StreamVLN"
@@ -3249,7 +3267,7 @@
           </div>
           <div class="vc-body">
             <h4>VLN model benchmark runs</h4>
-            <p><a href="https://github.com/AnjieCheng/NaVILA" target="_blank">NAVILA</a>, <a
+            <p><a href="https://github.com/AnjieCheng/NaVILA" target="_blank">NaVILA</a>, <a
                 href="https://github.com/MIV-XJTU/JanusVLN" target="_blank">JanusVLN</a>, and friends attempting the
               same curated episodes.</p>
           </div>
@@ -3259,29 +3277,29 @@
   </section> -->
 
   <!-- ============ BibTeX ============ -->
-  <!-- temporally disable BibTeX -->
-  <!-- <section id="bibtex">
+  <section id="bibtex">
     <div class="wrap">
       <div class="sec-eyebrow reveal">Citation</div>
       <h2 class="sec-title reveal">BibTeX</h2>
       <div class="bibtex-box reveal">
         <button class="copy-btn" id="copy-bib">Copy</button>
-        <pre id="bib-text">@preprint{anonymous2026humanoidvln,
+        <pre id="bib-text">@misc{pham2026humanoidvln,
   title     = {{HumanoidVLN}: A Physics-Grounded Simulator and Benchmark for
                Vision-Language Navigation Across Diverse Humanoid Embodiments},
-  author    = {Anonymous Authors},
-  booktitle = {IEEE-RAS International Conference on Humanoid Robots (Humanoids)},
+  author    = {Quan-Dung Pham and Anh Dao and The-Anh Nguyen and Minh Nguyen-Dinh and Phuong Nam Dang and Nguyen Viet Tri Pham and Hung Nguyen and Bach Dao and Tuyen P. Le and Truong Nguyen and Quan Nguyen},
+  note      = {Manuscript},
+  url       = {https://humanoid-vln.github.io/},
   year      = {2026}
 }</pre>
       </div>
     </div>
-  </section> -->
+  </section>
 
   <footer>
     <div class="wrap-wide foot-inner">
       <div style="font-family: var(--display); font-weight: 700; color: var(--ink);">HumanoidVLN</div>
       <div>
-        Anonymous Authors · Website template inspired by <a href="https://github.com/nerfies/nerfies.github.io"
+        VinMotion · VinUniversity · University of Southern California<br>Website template inspired by <a href="https://github.com/nerfies/nerfies.github.io"
           rel="noopener">Nerfies</a>.
       </div>
     </div>
@@ -3462,8 +3480,8 @@
       const robots = {
         A: { name: "Unitree G1", dof: 12, h: 1.32, img: 'images/robots/unitreeg1.webp', desc: 'The Unitree G1 is an agile, compact humanoid robot designed for embodied AI research, robotics development, and educational use. Standing roughly 1.3 meters tall and weighing 35 kg.' },
         B: { name: "Unitree H1", dof: 10, h: 1.80, img: 'images/robots/unitreeh1.webp', desc: 'The Unitree H1 is a full-scale, dynamic bipedal robot designed for R&D and embodied AI. Known for its impressive agility and industry-leading speed, it stands 1.8 meters tall, weighs about 47 kg.' },
-        C: { name: "Internal-A", dof: 12, h: 1.61, img: 'images/robots/internal_a.webp', desc: 'An internal full-size 12-DoF humanoid close to adult human proportions — the reference configuration for egocentric dataset recording, with camera height matching typical human viewpoints.' },
-        D: { name: "Internal-B", dof: 12, h: 1.17, img: 'images/robots/internal_b.webp', desc: 'The smallest embodiment. Its low camera viewpoint and short stride change both what the robot sees and how far each step carries it, stress-testing instruction grounding at child height.' }
+        C: { name: "Motion2", dof: 12, h: 1.61, img: 'images/robots/internal_a.webp', desc: 'A 12-DoF humanoid standing 1.61 m tall, with a head-camera height of 1.54 m. Evaluated under the same scenes and episode assignments as the other embodiments.' },
+        D: { name: "MiniMotion", dof: 12, h: 1.17, img: 'images/robots/internal_b.webp', desc: 'The smallest supported embodiment: 12 lower-body DoF, 1.17 m in height, and a camera height of 1.11 m. It provides a lower viewpoint for cross-embodiment evaluation.' }
       };
       const tabs = document.querySelectorAll('.robot-tab');
       const photo = document.getElementById('robot-photo');
